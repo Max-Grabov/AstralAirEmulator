@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <filesystem>
+#include "data/data.hpp"
 
 namespace AstralAir
 {
@@ -11,7 +12,7 @@ using fs = std::filesystem;
 namespace Formats
 {
 
-struct BinFormat
+class BinFormat
 {
   std::string extension_;
   std::string file_name_;
@@ -26,7 +27,7 @@ struct BinFormat
   BinFormat& operator=(const BinFormat &other) = default; 
   BinFormat& operator=(BinFormat &&other) = default;
 
-  public std::vector<Data> Open(); 
+  public std::vector<Data::AstralAirData> Open(); 
   
 };
 

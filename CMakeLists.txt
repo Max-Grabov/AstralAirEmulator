@@ -7,3 +7,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(AstralAirEmulator)
 
 add_subdirectory(src/formats)
+add_subdirectory(src/data)
