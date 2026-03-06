@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <filesystem>
+#include <memory>
 
 namespace AstralAir
 {
@@ -22,16 +23,17 @@ class BinFormat
   uint64_t current_offset_;
   fs::path path_;
 
-  BinFormat(const std::string &path_);
-  ~BinFormat() = default;
+public:
+  BinFormat();
+  virtual ~BinFormat() = default;
   BinFormat(const BinFormat& other) = default;
   BinFormat(BinFormat&& other) = default;
   BinFormat& operator=(const BinFormat &other) = default; 
   BinFormat& operator=(BinFormat &&other) = default;
 
-  virtual std::map<uint64_t, Data::AstralAirData> Open() = 0; 
-  
+  virtual std::map<uint64_t, std::unique_ptr<Data::AstralAirData>> Open() = 0;  
 };
 
 } 
+
 }
