@@ -1,4 +1,4 @@
-
+#include <cstdint>
 
 /**
  * Base virtual class to represent generic Astral Air data parsed from Bin files
@@ -11,8 +11,11 @@ namespace Data
 {  
 class AstralAirData
 { 
+  uint64_t size_;
+
+public: 
   AstralAirData(); 
-  virtual ~AstralAirData() = 0;
+  virtual ~AstralAirData();
 };
 
 }
