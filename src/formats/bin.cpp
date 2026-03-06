@@ -6,9 +6,6 @@ namespace AstralAir
 
 namespace Formats
 {
-  BinFormat::BinFormat() : extension_("bin")
-  {
-
-  } 
+  BinFormat::BinFormat(const std::string &path_) : extension_("bin") {} 
 }
 }

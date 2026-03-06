@@ -1,4 +1,4 @@
-#include <string>
+
 
 /**
  * Base virtual class to represent generic Astral Air data parsed from Bin files
@@ -8,15 +8,12 @@ namespace AstralAir
 {
 
 namespace Data
-{
-
+{  
 class AstralAirData
 { 
-public:
   AstralAirData(); 
   virtual ~AstralAirData() = 0;
-private:
-
 };
+
 }
 }
