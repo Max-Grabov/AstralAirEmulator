@@ -8,15 +8,15 @@ namespace AstralAir
 {
 
 namespace Data
-{  
+{
 class AstralAirData
-{ 
+{
   uint64_t size_;
 
-public: 
-  AstralAirData(); 
+public:
+  AstralAirData();
   virtual ~AstralAirData();
 };
 
-}
-}
+} // namespace Data
+} // namespace AstralAir

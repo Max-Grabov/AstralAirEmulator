@@ -13,6 +13,6 @@ public:
   ~AudioEntry();
 };
 
-}
+} // namespace Data
 
-}
+} // namespace AstralAir

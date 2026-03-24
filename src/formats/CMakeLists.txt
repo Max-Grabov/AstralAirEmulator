@@ -3,6 +3,8 @@ message("-- Entering Formats --")
 
 add_library(Formats
   bin.cpp
+  audio_bin.cpp
+  file_view.cpp
 )
 
 target_include_directories(Formats PUBLIC 

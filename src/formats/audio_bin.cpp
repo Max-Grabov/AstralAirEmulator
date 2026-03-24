@@ -1,11 +1,11 @@
-
-#include "bin.hpp"
+#include "audio_bin.hpp"
 
 namespace AstralAir
 {
 
 namespace Formats
 {
-BinFormat::BinFormat() : extension_("bin") {}
+AudioBin::AudioBin(const std::string &path) {}
 } // namespace Formats
+
 } // namespace AstralAir
