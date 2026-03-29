@@ -1,7 +1,7 @@
 #include "file_view.hpp"
+
 #include <cstdint>
 #include <cstdio>
-
 #include <iostream>
 #include <sys/stat.h>
 #include <type_traits>

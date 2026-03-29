@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <fstream>
+#include <string>
 
 namespace AstralAir
 {
@@ -12,6 +13,8 @@ class View
 public:
   View(const std::string &);
   ~View();
+  View(View &) = delete;
+  View operator=(View &) = delete;
   View(View &&) = default;
   View &operator=(View &&) = default;
 

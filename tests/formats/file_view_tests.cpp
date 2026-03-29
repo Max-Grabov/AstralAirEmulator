@@ -54,3 +54,13 @@ TEST(FileViewTest, FileReadUInt64)
     EXPECT_EQ(view.Read<uint64_t>(it), test_array[it]);
   }
 }
+
+TEST(FileViewTest, FileViewMove)
+{
+  AstralAir::Formats::View view{"./CMakeLists.txt"};
+  EXPECT_TRUE(view.ValidPath());  
+
+  AstralAir::Formats::View other(std::move(view));
+  EXPECT_TRUE(other.ValidPath());
+}
+
