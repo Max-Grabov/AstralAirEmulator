@@ -1,6 +1,13 @@
 
-add_library(Data INTERFACE
-  data.hpp 
+add_library(Data 
+  data.cpp 
 )
 
-set_target_properties(Data PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
+target_include_directories(Data PUBLIC
+  ${CMAKE_SOURCE_DIRECTORY}/src
+  ${CMAKE_SOURCE_DIRECTORY}/src/data
+)
+
+set_target_properties(Data PROPERTIES 
+  CMAKE_CXX_STANDARD 20
+)

@@ -1,21 +1,24 @@
 #include <cstdint>
+#include <string>
 
-/**
- * Base virtual class to represent generic Astral Air data parsed from Bin files
- * each Bin file (e.g. bgm, audio, etc) generates different data
- */
 namespace AstralAir
 {
 
 namespace Data
 {
-class AstralAirData
+struct AstralAirData
 {
-  uint64_t size_;
+private:
+  std::string data_name_;
+  uint32_t offset_;
+  uint32_t data_;
 
 public:
-  AstralAirData();
-  virtual ~AstralAirData();
+  AstralAirData(const std::string &, uint32_t, uint32_t);
+
+  const std::string &GetName() { return data_name_; }
+  const uint32_t GetOffset() { return offset_; }
+  const uint32_t GetData() { return data_; }
 };
 
 } // namespace Data

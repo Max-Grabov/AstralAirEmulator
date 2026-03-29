@@ -1,9 +1,7 @@
+#include "file_view.hpp"
 
 #include <cstdint>
-#include <filesystem>
-#include <map>
-#include <memory>
-#include <string>
+#include <vector>
 
 namespace AstralAir
 {
@@ -16,25 +14,31 @@ class AstralAirData;
 namespace Formats
 {
 
-namespace fs = std::filesystem;
-
 class BinFormat
 {
-  uint64_t current_offset_;
-  uint64_t byte_size_;
-  std::string extension_;
-  std::string file_name_;
-  fs::path path_;
+private:
+  enum FileType
+  {
+    VOICE,
+    BGM,
+    GRAPH,
+  };
+
+  uint32_t count_;
+  uint64_t index_size_;
+  uint32_t data_name_size_;
+  View file_view_;
+  FileType file_type_; 
 
 public:
-  BinFormat();
+  BinFormat(const std::string &path);
   virtual ~BinFormat() = default;
-  BinFormat(const BinFormat &other) = default;
+  BinFormat(const BinFormat &other) = delete;
   BinFormat(BinFormat &&other) = default;
-  BinFormat &operator=(const BinFormat &other) = default;
+  BinFormat &operator=(const BinFormat &other) = delete;
   BinFormat &operator=(BinFormat &&other) = default;
 
-  virtual std::map<uint64_t, std::unique_ptr<Data::AstralAirData>> Open() = 0;
+  std::vector<AstralAir::Data::AstralAirData> OpenAndRead();
 };
 
 } // namespace Formats
