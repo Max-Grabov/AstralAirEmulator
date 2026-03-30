@@ -16,9 +16,9 @@ private:
 public:
   AstralAirData(const std::string &, uint32_t, uint32_t);
 
-  const std::string &GetName() { return data_name_; }
-  const uint32_t GetOffset() { return offset_; }
-  const uint32_t GetData() { return data_; }
+  const std::string &GetName() const { return data_name_; }
+  const uint32_t GetOffset() const { return offset_; }
+  const uint32_t GetData() const { return data_; }
 };
 
 } // namespace Data

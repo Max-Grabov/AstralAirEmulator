@@ -26,13 +26,11 @@ BinFormat::BinFormat(const std::string &path) : file_view_(path)
   // Offset is the size of 1 of the templated data type
   data_name_size_ = file_view_.Read<uint32_t>(1);
 
-  uint64_t int_32_names_base{2 + index_size_};
-
   if(std::filesystem::path(path).filename() == "voice")
   {
     file_type_ = FileType::VOICE;
   }
-  else if(std::filesystem::path(path).filename() == "BGM")
+  else if(std::filesystem::path(path).filename() == "bgm")
   {
     file_type_ = FileType::BGM;
   }
@@ -45,13 +43,16 @@ std::vector<AstralAirData> BinFormat::OpenAndRead()
   if(file_type_ == FileType::VOICE || FileType::BGM)
   {
     uint32_t file_offset{2};
+    uint64_t int_32_names_base{2 + index_size_};
     for(int i = 0; i < count_; ++i)
     {
       uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
       if(filename_offset >= data_name_size_)
         return {};
 
-      std::string name{""};
+      // ReadString takes offsets in single bytes, so we multiply by uint32_t size to convert back
+      std::string name{file_view_.ReadString(
+          sizeof(uint32_t) * (int_32_names_base + filename_offset), data_name_size_ - file_offset)};
       uint32_t offset{file_view_.Read<uint32_t>(file_offset + 1)};
       uint32_t data{file_view_.Read<uint32_t>(file_offset + 2)};
 
