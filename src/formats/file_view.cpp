@@ -12,7 +12,7 @@ namespace AstralAir
 namespace Formats
 {
 View::View(const std::string &path)
-    : current_offset_(0), file_name_(path), file_data_(path, std::ios::binary)
+    : file_name_(path), file_data_(path, std::ios::binary)
 {
   byte_size_ = GetFileSize();
 }
@@ -33,17 +33,17 @@ template <typename T> T View::Read(const uint64_t offset)
 
   T data{0};
 
-  if(sizeof(T) * (current_offset_ + offset) > byte_size_)
+  if(sizeof(T) * offset > byte_size_)
   {
     std::cerr << "Requested offset will be out of bounds, requested read is byte "
-              << current_offset_ + offset << "\n";
+              << offset << "\n";
     return 0;
   }
 
-  if(sizeof(T) * (current_offset_ + offset + static_cast<T>(sizeof(T))) > byte_size_)
+  if(sizeof(T) * (offset + static_cast<T>(sizeof(T))) > byte_size_)
   {
     std::cerr << "Requested read will be out of bounds, requested read is bytes "
-              << current_offset_ + offset << " to " << current_offset_ + offset + sizeof(T) << "\n";
+              << offset << " to " << offset + sizeof(T) << "\n";
     return 0;
   }
 
@@ -52,12 +52,12 @@ template <typename T> T View::Read(const uint64_t offset)
   // (e.g. uint64_t offset value of corresponds to an actual uint64_t 8 byte offset, whereas uint8_t
   // offset value should just be 1 byte per offset value)
   // TODO this needs to get thought out more (e.g. remove current_offset_)
-  file_data_.seekg(sizeof(T) * (current_offset_ + offset), std::ios::beg);
+  file_data_.seekg(sizeof(T) * offset, std::ios::beg);
 
   // This must be char *, uint8_t is not guarranteed to play nice (e.g. in testing all reads were
   // returning 0)
   file_data_.read(reinterpret_cast<char *>(&data), sizeof(T));
-  file_data_.seekg(current_offset_, std::ios::beg);
+  file_data_.seekg(0, std::ios::beg);
 
   return data;
 }

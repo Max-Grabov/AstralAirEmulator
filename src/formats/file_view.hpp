@@ -26,8 +26,6 @@ public:
   bool ValidPath() const;
 
 private:
-  static constexpr uint8_t OFFSET_CONVERSION_{8};
-  uint64_t current_offset_;
   uint64_t byte_size_;
   std::string file_name_;
   std::ifstream file_data_;
