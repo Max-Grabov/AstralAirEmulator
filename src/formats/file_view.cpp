@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <sys/stat.h>
 #include <type_traits>
 
@@ -60,6 +62,47 @@ template <typename T> T View::Read(const uint64_t offset)
   file_data_.seekg(0, std::ios::beg);
 
   return data;
+}
+
+// Reads a string from a file, with the amount of bytes dictated by size
+// returns an empty string if the read is over bounds by size of offset
+// Or if the file view is invalid
+std::string View::ReadString(const uint64_t offset, const uint64_t size)
+{
+  if(!ValidPath())
+  {
+    return "";
+  } 
+
+  if(offset > byte_size_)
+  {
+    std::cerr << "Requested offset will be out of bounds, requested read is byte "
+              << offset << "\n";
+    return "";
+  }
+
+  if(offset + size > byte_size_)
+  {
+    std::cerr << "Requested read will be out of bounds, requested read is bytes "
+              << offset << " to " << offset + size << "\n";
+    return 0;
+  }
+
+  // We read a char from the file into some buffer then convert to string
+  auto buffer = std::make_unique<char*>(new char[size]);
+
+  if(!*buffer.get())
+  {
+    std::cerr << "Failed to allocate a buffer for a string read\n";
+    return "";
+  }
+  file_data_.seekg(offset, std::ios::beg);
+  file_data_.read(*buffer.get(), size);
+
+  // Copy into the string, not sure off the top of my head how to read directly
+  // without using some for loop into char buffers to then construct in place
+  // which imo feels like a copy*
+  return std::string{*buffer.get()};
 }
 
 uint64_t View::GetFileSize() const

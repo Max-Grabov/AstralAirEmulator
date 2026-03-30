@@ -19,9 +19,8 @@ public:
   View &operator=(View &&) = default;
 
   const std::ifstream &GetFileStream() const;
-
   template <typename T> T Read(const uint64_t);
-
+  std::string ReadString(const uint64_t, const uint64_t);
   uint64_t GetFileSize() const;
   bool ValidPath() const;
 
