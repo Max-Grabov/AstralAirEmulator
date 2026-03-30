@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 
 #include <cstdint>
+#include <fstream>
 #include <string>
 
 TEST(FileViewTest, InvalidPath)
@@ -75,5 +76,25 @@ TEST(FileViewTest, FileViewMove)
 
   AstralAir::Formats::View other(std::move(view));
   EXPECT_TRUE(other.ValidPath());
+}
+
+TEST(FileViewTest, FileReadString)
+{
+  std::ofstream file_to_read("./AstralAirData/test.bin", std::ios::out | std::ios::binary);
+
+  char data[6] = "abcba";
+  file_to_read.write(reinterpret_cast<const char *>(data), sizeof(data));
+
+  file_to_read.close();
+
+  AstralAir::Formats::View view{"./AstralAirData/test.bin"};
+  EXPECT_TRUE(view.ValidPath());
+  
+  // offset 0 size 5
+  std::string read_data{view.ReadString(0, 5)};
+  for(size_t it{0}; it < 5; ++it) 
+  {
+    EXPECT_EQ(data[it], read_data[it]);
+  } 
 }
 
