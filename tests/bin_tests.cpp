@@ -1,5 +1,5 @@
-#include "../../src/data/data.hpp"
-#include "../../src/formats/bin.hpp"
+#include "../src/data/data.hpp"
+#include "../src/formats/bin.hpp"
 
 #include "gtest/gtest.h"
 
@@ -21,5 +21,20 @@ TEST(BinTest, TestOpen)
   for(size_t it{0}; it < 8; ++it)
   {
     EXPECT_EQ(data[it].GetName(), comparison[it]); 
+  }
+}
+
+TEST(BinTest, TestPrint)
+{
+  using AstralAir::Data::AstralAirData;
+  using AstralAir::Formats::BinFormat;
+
+  BinFormat bin("./AstralAirData/voice.bin");
+
+  std::vector<AstralAirData> data{bin.OpenAndRead()}; 
+
+  for(const auto &d : data)
+  {
+    std::cout << d.GetName() << "\n" << d.GetData() << "\n" << d.GetOffset() <<"\n\n"; 
   }
 }

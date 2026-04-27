@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <iostream>
 
 // File decoding for the binary files is heavily based on
 // https://github.com/morkt/GARbro/blob/master/ArcFormats/Favorite/ArcBIN.cs
@@ -40,25 +41,22 @@ BinFormat::BinFormat(const std::string &path) : file_view_(path)
 std::vector<AstralAirData> BinFormat::OpenAndRead()
 {
   std::vector<AstralAirData> data_collection;
-  if(file_type_ == FileType::VOICE || FileType::BGM)
+  uint32_t file_offset{2};
+  uint64_t int_32_names_base{2 + index_size_};
+  for(int i = 0; i < count_; ++i)
   {
-    uint32_t file_offset{2};
-    uint64_t int_32_names_base{2 + index_size_};
-    for(int i = 0; i < count_; ++i)
-    {
-      uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
-      if(filename_offset >= data_name_size_)
-        return {};
+    uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)}; 
+    if(filename_offset >= data_name_size_)
+      return {};
 
-      // ReadString takes offsets in single bytes, so we multiply by uint32_t size to convert back
-      std::string name{file_view_.ReadString(
-          sizeof(uint32_t) * (int_32_names_base + filename_offset), data_name_size_ - file_offset)};
-      uint32_t offset{file_view_.Read<uint32_t>(file_offset + 1)};
-      uint32_t data{file_view_.Read<uint32_t>(file_offset + 2)};
+    // ReadString takes offsets in single bytes, so we multiply by uint32_t size to convert back
+    std::string name{file_view_.ReadString(
+        sizeof(uint32_t) * (int_32_names_base + filename_offset), data_name_size_ - filename_offset)};
+    uint32_t offset{file_view_.Read<uint32_t>(file_offset + 1)};
+    uint32_t data{file_view_.Read<uint32_t>(file_offset + 2)};
 
-      data_collection.emplace_back(name, offset, data);
-      file_offset += 3;
-    }
+    data_collection.emplace_back(name, offset, data);
+    file_offset += 3;
   }
 
   return data_collection;
