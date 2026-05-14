@@ -20,14 +20,6 @@ target_link_libraries(FormatsBase INTERFACE
   Base
 )
 
-target_include_directories(AudioBase INTERFACE
-  ${CMAKE_SOURCE_DIRECTORY}/src/audio
-)
-
-target_include_directories(FormatsBase INTERFACE
-  ${CMAKE_SOURCE_DIRECTORY}/src/formats
-)
-
 add_executable(decoder_tests decoder_tests.cpp)
 
 add_executable(file_view_tests file_view_tests.cpp)

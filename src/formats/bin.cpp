@@ -1,6 +1,6 @@
 
 #include "bin.hpp"
-#include "../data/data.hpp"
+#include "data.hpp" 
 
 #include <cstdint>
 #include <filesystem>

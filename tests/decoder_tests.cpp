@@ -1,6 +1,6 @@
-#include "../src/audio/decoder.hpp"
-#include "../src/data/data.hpp"
-#include "../src/formats/bin.hpp"
+#include "decoder.hpp"
+#include "data.hpp"
+#include "bin.hpp"
 
 #include "gtest/gtest.h"
 

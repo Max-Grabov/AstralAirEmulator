@@ -1,4 +1,4 @@
-#include "../src/formats/file_view.hpp"
+#include "file_view.hpp"
 
 #include "gtest/gtest.h"
 

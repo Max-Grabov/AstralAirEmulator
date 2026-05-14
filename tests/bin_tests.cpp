@@ -1,5 +1,5 @@
-#include "../src/data/data.hpp"
-#include "../src/formats/bin.hpp"
+#include "data.hpp"
+#include "bin.hpp"
 
 #include "gtest/gtest.h"
 
