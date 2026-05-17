@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <fstream>
-#include <string>
 
 TEST(FileViewTest, InvalidPath)
 {
@@ -91,9 +90,9 @@ TEST(FileViewTest, FileReadString)
   EXPECT_TRUE(view.ValidPath());
 
   // offset 0 size 5
-  std::string read_data{view.ReadString(0, 5)};
-  for(size_t it{0}; it < 5; ++it)
+  auto read_data{view.ReadStringBuffer(0, 5)};
+  for(size_t it{}; it < 5; ++it)
   {
-    EXPECT_EQ(data[it], read_data[it]);
+    EXPECT_EQ(data[it], static_cast<char>(read_data[it]));
   }
 }

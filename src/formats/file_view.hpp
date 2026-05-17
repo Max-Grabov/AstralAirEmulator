@@ -1,5 +1,7 @@
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
+#include <vector>
 #include <string>
 
 namespace AstralAir
@@ -20,7 +22,7 @@ public:
 
   const std::ifstream &GetFileStream() const;
   template <typename T> T Read(const uint64_t);
-  std::string ReadString(const uint64_t, const uint64_t);
+  std::vector<std::byte> ReadStringBuffer(const uint64_t, const uint64_t);
   uint64_t GetFileSize() const;
   bool ValidPath() const;
 

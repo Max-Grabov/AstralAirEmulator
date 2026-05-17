@@ -8,19 +8,12 @@ add_library(Formats
   ${FORMATS_SRC}/file_view.cpp
 )
 
-add_library(Data
-  ${DATA_SRC}/data.cpp
-)
-
 add_library(Audio
   ${AUDIO_SRC}/decoder.cpp
 )
 
 target_include_directories(Formats PUBLIC  
   ${FORMATS_SRC} 
-)
-
-target_include_directories(Data PUBLIC  
   ${DATA_SRC}
 )
 
@@ -40,5 +33,4 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(vorbis)
 
 target_link_libraries(Audio PRIVATE vorbis)
-target_link_libraries(Formats PUBLIC Data)
 

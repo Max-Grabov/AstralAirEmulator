@@ -1,7 +1,7 @@
 #include "decoder.hpp"
 #include "vorbis/codec.h"
 #include <cstdio>
-#include <string>
+#include <cstring>
 #include <iostream>
 #include <ogg/ogg.h>
 
@@ -11,7 +11,7 @@ namespace AstralAir
 namespace Audio
 {
 
-void DecodeOggContainer(const std::string &view)
+void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
 {
   ogg_sync_state sync_state; 
   ogg_stream_state stream_state;
@@ -27,8 +27,7 @@ void DecodeOggContainer(const std::string &view)
 
   while(1)
   {
-    // First thing we want to do is determine the size of the stream, each character in our string view is 1 byte so it is trivial to do so.
-    if(view.size() == 0)
+    if(input_buffer.size() == 0)
     {
       std::cerr << "Input stream for decoding is empty\n";
 
@@ -36,40 +35,35 @@ void DecodeOggContainer(const std::string &view)
       return;
     }
 
-    long byte_size = view.size() * sizeof(char);
+    long byte_size = input_buffer.size(); 
 
-    if(byte_size == 0)
-    {
-      std::cerr << "0 byte size for " << view << "\n";
-      return;
-    }
-
+    // Add one for null terminator when moving the input_buffer's data to the buffer
     char *buffer = ogg_sync_buffer(&sync_state, byte_size);
+
     if(!buffer)
     {
       std::cerr << "Input buffer for decoding is empty\n";
       return;
-    }
+    } 
+    
+    std::memcpy(buffer, input_buffer.data(), byte_size);
 
-    if(ogg_sync_pageout(&sync_state, &ogg_page) != 1)
-    {
-      if(byte_size < (1 << 12))
-      {
-        std::cout << "Out of data\n"; 
-        break;
-      }
-    }
-    
     ogg_sync_wrote(&sync_state, byte_size);
+
+    if(ogg_sync_pageout(&sync_state, &ogg_page) != 1) break;
+     
     ogg_stream_init(&stream_state, ogg_page_serialno(&ogg_page));
-    
     vorbis_info_init(&v_info);
-    vorbis_comment_init(&v_comment);
+    vorbis_comment_init(&v_comment); 
 
     // Standard check to ensure it is vorbis
     if(ogg_stream_pagein(&stream_state, &ogg_page) < 0)
     {
       std::cerr << "Error reading first page of OggStream\n";
+      std::cout << ogg_page_version(&ogg_page) <<"\n";
+      std::cout << ogg_page_serialno(&ogg_page) <<"\n";
+      std::cout << stream_state.serialno << "\n";
+
       return;
     }
     if(ogg_stream_packetout(&stream_state, &ogg_packet) != 1)

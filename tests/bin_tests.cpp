@@ -3,7 +3,6 @@
 
 #include "gtest/gtest.h"
 
-#include <string>
 #include <array>
 
 TEST(BinTest, TestOpen)
@@ -14,13 +13,13 @@ TEST(BinTest, TestOpen)
   BinFormat bin("./AstralAirData/voice.bin");
 
   std::vector<AstralAirData> data{bin.OpenAndRead()};
-  std::array<std::string, 8> comparison = {"000000010", "000000050", "000000090", "000000130", "000000170", "000000210", "000000250", "000000290"};
+  std::array<char, 9> comparison = {'0', '1', '0', '0', '0', '0', '0', '0', '0'};
 
   EXPECT_EQ(33048, data.size());
 
-  for(size_t it{0}; it < 8; ++it)
+  for(size_t it{0}; it < 9; ++it)
   {
-    EXPECT_EQ(data[it].GetName(), comparison[it]); 
+    EXPECT_EQ(static_cast<char>(data[0].GetBuffer()[it]), comparison[it]); 
   }
 }
 
@@ -32,9 +31,10 @@ TEST(BinTest, TestPrint)
   BinFormat bin("./AstralAirData/voice.bin");
 
   std::vector<AstralAirData> data{bin.OpenAndRead()}; 
-
+  long index{};
   for(const auto &d : data)
   {
-    std::cout << d.GetName() << "\n" << d.GetData() << "\n" << d.GetOffset() <<"\n\n"; 
+    std::cout << index++ << "\n";
+    std::cout << d.GetBuffer().size() << "\n"; 
   }
 }

@@ -13,5 +13,5 @@ TEST(DecoderTest, DecodeTest)
   BinFormat bin("./AstralAirData/voice.bin");
 
   std::vector<AstralAirData> data{bin.OpenAndRead()}; 
-  DecodeOggContainer(data[8456].GetName()); 
+  DecodeOggContainer(data[8452].GetBuffer()); 
 }

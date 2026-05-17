@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <filesystem>
-#include <iostream>
 
 // File decoding for the binary files is heavily based on
 // https://github.com/morkt/GARbro/blob/master/ArcFormats/Favorite/ArcBIN.cs
@@ -50,12 +49,19 @@ std::vector<AstralAirData> BinFormat::OpenAndRead()
       return {};
 
     // ReadString takes offsets in single bytes, so we multiply by uint32_t size to convert back
-    std::string name{file_view_.ReadString(
+    std::vector<std::byte> buffer{file_view_.ReadStringBuffer(
         sizeof(uint32_t) * (int_32_names_base + filename_offset), data_name_size_ - filename_offset)};
+
+    // First reverse the stream as it is inverted when reading
+    // then, rotate every 32 bytes (4 char) so xyzabcdOggS becomes OggSabcdxyz 
+//    std::reverse(name.begin(), name.end());
+//    auto end{name.end()};
+//    for(auto it{name.begin()}; it < end; it += 4)
+//      std::reverse(it, (it + 4 > end ? end : it + 4));   
+
     uint32_t offset{file_view_.Read<uint32_t>(file_offset + 1)};
     uint32_t data{file_view_.Read<uint32_t>(file_offset + 2)};
-
-    data_collection.emplace_back(name, offset, data);
+    data_collection.emplace_back(std::move(buffer), offset, data);
     file_offset += 3;
   }
 
