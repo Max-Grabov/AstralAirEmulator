@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,10 +23,10 @@ View::~View() { file_data_.close(); }
 
 const std::ifstream &View::GetFileStream() const { return file_data_; }
 
-/* A function designed to read a a type T, the template parameter. It will read up to sizeof(T) bytes, starting at a byte offset dictated by the function parameter.
- * This function performs no checks of endian-ness on its own. It is up to the user to determine whether the output must be in little or big endian form. 
+/* A function designed to read a a type T, the template parameter. It will read up to sizeof(T) bytes, starting at a byte offset dictated by the function parameter. This is meant to be a quick use function when you know you need a certain data type (e.g. uint32_t)
+ * The other parameter is the strategy used via a std::function. This is meant to dictate how you want to sort the bytes at the end (i.e. Big vs Little endian). Ofcourse if you supply some lambda or function that makes no sense, there is no guarantee the data will be safe and behavior is defined. The bare minimum is that this function must return nothing and take a std::vector<std::byte> & as a parameter. By default this strategy is null 
  */
-template <typename T> T View::Read(const uint64_t offset)
+template <typename T> T View::Read(const uint64_t offset, const std::function<void(std::vector<std::byte>&)> &strategy)
 {
   static_assert(std::is_standard_layout_v<T> && std::is_trivial_v<T>,
                 "Type can't be reinterpret casted");
@@ -34,8 +35,6 @@ template <typename T> T View::Read(const uint64_t offset)
   {
     return 0;
   }
-
-  T data{0};
 
   if(sizeof(T) * offset > byte_size_)
   {
@@ -51,18 +50,29 @@ template <typename T> T View::Read(const uint64_t offset)
     return 0;
   }
 
+  std::vector<std::byte> buffer(sizeof(T));
+
   // We set the offset to what our current set offset is plus the parameter
   // Conversion is needed if our data type is bigger than 1 byte, as seekg offset acts as one byte
   // (e.g. uint64_t offset value of corresponds to an actual uint64_t 8 byte offset, whereas uint8_t
   // offset value should just be 1 byte per offset value)
-  // TODO this needs to get thought out more (e.g. remove current_offset_)
   file_data_.seekg(sizeof(T) * offset, std::ios::beg);
 
   // This must be char *, uint8_t is not guarranteed to play nice (e.g. in testing all reads were
   // returning 0)
-  file_data_.read(reinterpret_cast<char *>(&data), sizeof(T));
+  file_data_.read(reinterpret_cast<char *>(buffer.data()), sizeof(T));
   file_data_.seekg(0, std::ios::beg); 
 
+  T data{};
+
+  // Apply the user supplied strategy if it is non null
+  if(strategy == nullptr)
+  {
+    std::memcpy(&data, buffer.data(), sizeof(T));
+    return data;
+  } 
+  strategy(buffer);
+  std::memcpy(&data, buffer.data(), sizeof(T));
   return data;
 }
 
@@ -72,7 +82,7 @@ template <typename T> T View::Read(const uint64_t offset)
 *
 * Similar to the other read function, users can specify a strategy to use for little or big endian 
 */
-std::vector<std::byte> View::ReadBuffer(const uint64_t offset, const uint64_t size)
+std::vector<std::byte> View::Read(const uint64_t offset, const uint64_t size, const std::function<void(std::vector<std::byte>&)> &strategy)
 {
   if(!ValidPath())
   {
@@ -97,8 +107,11 @@ std::vector<std::byte> View::ReadBuffer(const uint64_t offset, const uint64_t si
   std::vector<std::byte> buffer(size);  
   file_data_.seekg(offset, std::ios::beg);
   file_data_.read(reinterpret_cast<char *>(buffer.data()), size); 
+  file_data_.seekg(0, std::ios::beg);
 
   // RVO
+  if(strategy == nullptr) return buffer; 
+  strategy(buffer);
   return buffer;
 }
 
@@ -122,9 +135,9 @@ uint64_t View::GetFileSize() const
 
 bool View::ValidPath() const { return file_data_.is_open(); }
 
-template uint8_t View::Read<uint8_t>(const uint64_t);
-template uint32_t View::Read<uint32_t>(const uint64_t);
-template uint64_t View::Read<uint64_t>(const uint64_t);
+template uint8_t View::Read<uint8_t>(const uint64_t, const std::function<void(std::vector<std::byte>&)>& = nullptr);
+template uint32_t View::Read<uint32_t>(const uint64_t, const std::function<void(std::vector<std::byte>&)>& = nullptr);
+template uint64_t View::Read<uint64_t>(const uint64_t, const std::function<void(std::vector<std::byte>&)>& = nullptr);
 
 } // namespace Formats
 
