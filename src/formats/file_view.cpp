@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <sys/stat.h>
 #include <type_traits>
@@ -45,16 +46,12 @@ T View::Read(const uint64_t offset, const std::function<void(std::vector<std::by
 
   if(sizeof(T) * offset > byte_size_)
   {
-    std::cerr << "Requested offset will be out of bounds, requested read is byte " << offset
-              << "\n";
-    return 0;
+    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " + std::to_string(offset));
   }
 
   if(sizeof(T) * (offset + static_cast<T>(sizeof(T))) > byte_size_)
   {
-    std::cerr << "Requested read will be out of bounds, requested read is bytes " << offset
-              << " to " << offset + sizeof(T) << "\n";
-    return 0;
+    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " + std::to_string(offset) + " to " + std::to_string(offset + sizeof(T)));
   }
 
   std::vector<std::byte> buffer(sizeof(T));
@@ -99,16 +96,12 @@ std::vector<std::byte> View::Read(const uint64_t offset, const uint64_t size,
 
   if(offset > byte_size_)
   {
-    std::cerr << "Requested offset will be out of bounds, requested read is byte " << offset
-              << "\n";
-    return {};
+    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " + std::to_string(offset));
   }
 
   if(offset + size > byte_size_)
   {
-    std::cerr << "Requested read will be out of bounds, requested read is bytes " << offset
-              << " to " << offset + size << "\n";
-    return {};
+    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " + std::to_string(offset) + " to " + std::to_string(offset + size));
   }
 
   // We write into a vector buffer of bytes

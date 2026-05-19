@@ -57,7 +57,6 @@ std::vector<AstralAirData> BinFormat::OpenAndRead()
       return {};
 
     // ReadStringBuffer takes offsets in single bytes, so we multiply by uint32_t size to convert
-    // back
     std::vector<std::byte> buffer{
         file_view_.Read(sizeof(uint32_t) * (int_32_names_base + filename_offset),
                         data_name_size_ - filename_offset)};
