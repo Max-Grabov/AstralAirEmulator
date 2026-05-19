@@ -44,23 +44,19 @@ T View::Read(const uint64_t offset, const std::function<void(std::vector<std::by
     return 0;
   }
 
-  if(sizeof(T) * offset > byte_size_)
+  if(offset > byte_size_)
   {
     throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " + std::to_string(offset));
   }
 
-  if(sizeof(T) * (offset + static_cast<T>(sizeof(T))) > byte_size_)
+  if(offset + static_cast<T>(sizeof(T)) > byte_size_)
   {
     throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " + std::to_string(offset) + " to " + std::to_string(offset + sizeof(T)));
   }
 
   std::vector<std::byte> buffer(sizeof(T));
-
-  // We set the offset to what our current set offset is plus the parameter
-  // Conversion is needed if our data type is bigger than 1 byte, as seekg offset acts as one byte
-  // (e.g. uint64_t offset value of corresponds to an actual uint64_t 8 byte offset, whereas uint8_t
-  // offset value should just be 1 byte per offset value)
-  file_data_.seekg(sizeof(T) * offset, std::ios::beg);
+ 
+  file_data_.seekg(offset, std::ios::beg);
 
   // This must be char *, uint8_t is not guarranteed to play nice (e.g. in testing all reads were
   // returning 0)
