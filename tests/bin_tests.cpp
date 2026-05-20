@@ -23,7 +23,7 @@ TEST(BinTest, TestVoiceOpen)
   }
 }
 
-TEST(BinTest, TestDataRead)
+TEST(BinTest, TestDataReadHeader)
 {
   using AstralAir::Data::AstralAirData;
   using AstralAir::Formats::BinFormat;
@@ -33,6 +33,11 @@ TEST(BinTest, TestDataRead)
   View data_view("./AstralAirData/voice.bin");
 
   std::vector<AstralAirData> data{bin.OpenAndRead()};
-
-  std::cout << reinterpret_cast<const char *>(data_view.Read(data[0].GetOffset(), data[0].GetData()).data()) << "\n";
+  auto offset = data[0].GetOffset();
+  auto size = data[0].GetData();
+  auto result = data_view.Read(offset, size);
+  EXPECT_EQ(static_cast<char>(result[0]), 'O');
+  EXPECT_EQ(static_cast<char>(result[1]), 'g');
+  EXPECT_EQ(static_cast<char>(result[2]), 'g');
+  EXPECT_EQ(static_cast<char>(result[3]), 'S');
 }
