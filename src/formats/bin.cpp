@@ -23,7 +23,7 @@ BinFormat::BinFormat(const std::string &path) : file_view_(path)
   // reading more
   count_ = file_view_.Read<uint32_t>(0);
   index_size_ = count_ * 12;
- 
+
   name_index_size_ = file_view_.Read<uint32_t>(4);
 
   if(std::filesystem::path(path).filename() == "voice")
@@ -49,8 +49,7 @@ std::vector<AstralAirData> BinFormat::OpenAndRead()
       return data_collection;
 
     std::vector<std::byte> name_buffer{
-        file_view_.Read(names_base_position + filename_offset,
-                        name_index_size_ - filename_offset)};
+        file_view_.Read(names_base_position + filename_offset, name_index_size_ - filename_offset)};
     uint32_t offset{file_view_.Read<uint32_t>(file_offset + 4)};
     uint32_t data{file_view_.Read<uint32_t>(file_offset + 8)};
     data_collection.emplace_back(std::move(name_buffer), offset, data);

@@ -13,7 +13,7 @@ TEST(DecoderTest, DecodeTest)
 
   BinFormat bin("./AstralAirData/voice.bin");
   View data_view("./AstralAirData/voice.bin");
-  
+
   std::vector<AstralAirData> data{bin.OpenAndRead()};
   auto offset = data[0].GetOffset();
   auto size = data[0].GetData();

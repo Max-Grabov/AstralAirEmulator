@@ -1,15 +1,16 @@
 #include "decoder.hpp"
 #include "vorbis/codec.h"
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <cmath>
 #include <cstring>
 #include <iostream>
-#include <algorithm>
 #include <ogg/config_types.h>
 #include <ogg/ogg.h>
 
-// Ogg Stream decoding taken and adapted from this example here -> https://github.com/xiph/vorbis/blob/main/examples/decoder_example.c
+// Ogg Stream decoding taken and adapted from this example here ->
+// https://github.com/xiph/vorbis/blob/main/examples/decoder_example.c
 
 namespace AstralAir
 {
@@ -121,13 +122,15 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   char **pin = v_comment.user_comments;
   while(*pin)
   {
-    std::cout << *pin << "\n";++pin;
+    std::cout << *pin << "\n";
+    ++pin;
   }
   std::cout << "channel " << v_info.channels << " rate " << v_info.rate << "\n";
-      
+
   int conv_size = byte_size / v_info.channels;
 
-  // From the example, we should have parsed the three headers. Now we can initialize the vorbis packet
+  // From the example, we should have parsed the three headers. Now we can initialize the vorbis
+  // packet
   if(vorbis_synthesis_init(&v_dsp, &v_info) == 0)
   {
     vorbis_block_init(&v_dsp, &v_block);
@@ -137,7 +140,8 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
     while(!end_of_stream)
     {
       auto result = ogg_sync_pageout(&sync_state, &ogg_page);
-      if(!result) break;
+      if(!result)
+        break;
       if(result < 0)
       {
         std::cerr << "Corrupted\n";
@@ -148,12 +152,13 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
         ogg_stream_pagein(&stream_state, &ogg_page);
         while(1)
         {
-          auto second_result = ogg_stream_packetout(&stream_state, &ogg_packet); 
-          if(!second_result) break;
+          auto second_result = ogg_stream_packetout(&stream_state, &ogg_packet);
+          if(!second_result)
+            break;
           if(second_result < 0)
           {
             std::cerr << "Corrupted\n";
-            return;    
+            return;
           }
           else
           {
@@ -163,15 +168,15 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
 
             if(vorbis_synthesis(&v_block, &ogg_packet) == 0)
               vorbis_synthesis_blockin(&v_dsp, &v_block);
-            
+
             while((samples = vorbis_synthesis_pcmout(&v_dsp, &pcm)) > 0)
             {
               bool clipflag{false};
-              int bout = std::min(samples, conv_size); 
+              int bout = std::min(samples, conv_size);
               pcm_output.reserve(bout * v_info.channels);
 
               for(int i{}; i < v_info.channels; i++)
-              { 
+              {
                 for(int j{}; j < bout; j++)
                 {
                   float sample = pcm[i][j];
@@ -182,13 +187,14 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
               }
 
               if(clipflag)
-                std::cerr << "Clipping at frame " << v_dsp.sequence << "\n";   
+                std::cerr << "Clipping at frame " << v_dsp.sequence << "\n";
 
               vorbis_synthesis_read(&v_dsp, bout);
             }
           }
         }
-        if(ogg_page_eos(&ogg_page)) end_of_stream = 1;
+        if(ogg_page_eos(&ogg_page))
+          end_of_stream = 1;
       }
     }
     // Stream should be over

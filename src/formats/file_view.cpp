@@ -46,16 +46,18 @@ T View::Read(const uint64_t offset, const std::function<void(std::vector<std::by
 
   if(offset > byte_size_)
   {
-    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " + std::to_string(offset));
+    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " +
+                             std::to_string(offset));
   }
 
   if(offset + static_cast<T>(sizeof(T)) > byte_size_)
   {
-    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " + std::to_string(offset) + " to " + std::to_string(offset + sizeof(T)));
+    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " +
+                             std::to_string(offset) + " to " + std::to_string(offset + sizeof(T)));
   }
 
   std::vector<std::byte> buffer(sizeof(T));
- 
+
   file_data_.seekg(offset, std::ios::beg);
 
   // This must be char *, uint8_t is not guarranteed to play nice (e.g. in testing all reads were
@@ -92,12 +94,14 @@ std::vector<std::byte> View::Read(const uint64_t offset, const uint64_t size,
 
   if(offset > byte_size_)
   {
-    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " + std::to_string(offset));
+    throw std::runtime_error("Requested offset will be out of bounds, requested read is byte " +
+                             std::to_string(offset));
   }
 
   if(offset + size > byte_size_)
   {
-    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " + std::to_string(offset) + " to " + std::to_string(offset + size));
+    throw std::runtime_error("Requested read will be out of bounds, requested read is bytes " +
+                             std::to_string(offset) + " to " + std::to_string(offset + size));
   }
 
   // We write into a vector buffer of bytes
