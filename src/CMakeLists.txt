@@ -11,6 +11,7 @@ add_library(Formats
 add_library(Audio
   ${AUDIO_SRC}/decoder.cpp
   ${AUDIO_SRC}/audio_stream.cpp
+  ${AUDIO_SRC}/audio_playback.cpp
 )
 
 target_include_directories(Formats PUBLIC  
@@ -34,21 +35,22 @@ FetchContent_Declare(
 )
 
 if(${USE_SDL3})
+  set(SDL_X11_XTEST OFF)
   FetchContent_Declare(
     sdl3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-3.4.8 
   )
-  FetchContent_MakeAvailable(sdl3)
+  FetchContent_MakeAvailable(sdl3) 
 endif()
 
 FetchContent_MakeAvailable(vorbis)
 
 target_link_libraries(Audio PRIVATE vorbis)
 
-if(${USE_SDL3})
-  set(SDL_X11_XTEST OFF)
+if(${USE_SDL3}) 
   # Maybe find a way to link to only audio? TODO
-  target_link_libraries(Audio PRIVATE SDL3-static) 
+  target_include_directories(Audio PUBLIC ${sdl3_SOURCE_DIR}/include)
+  target_link_libraries(Audio PUBLIC SDL3-shared) 
 endif()
 

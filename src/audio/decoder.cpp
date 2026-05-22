@@ -1,24 +1,26 @@
 #include "decoder.hpp"
+
+#include "audio_stream.hpp"
 #include "vorbis/codec.h"
+#include <ogg/config_types.h>
+#include <ogg/ogg.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-#include <ogg/config_types.h>
-#include <ogg/ogg.h>
 
 // Ogg Stream decoding taken and adapted from this example here ->
 // https://github.com/xiph/vorbis/blob/main/examples/decoder_example.c
-
 namespace AstralAir
 {
 
 namespace Audio
 {
 
-void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
+AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
 {
   ogg_sync_state sync_state;
   ogg_stream_state stream_state;
@@ -26,18 +28,16 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   ogg_packet ogg_packet;
   vorbis_info v_info;
   vorbis_comment v_comment;
-  vorbis_dsp_state v_dsp;
+  {}  vorbis_dsp_state v_dsp;
   vorbis_block v_block;
-  bool stream_end{false};
 
   ogg_sync_init(&sync_state);
 
   if(input_buffer.size() == 0)
   {
     std::cerr << "Input stream for decoding is empty\n";
-
-    // Return an empty whatever once return type is decided
-    return;
+    // This returns an empty vector and a channel & length of zero. I'd rather not throw a runtime exception when audio can't be decoded, so this way we later just check if these are empty fields when playing audio on some thread and then immediately return if so.
+    return {};
   }
 
   long byte_size = input_buffer.size();
@@ -48,7 +48,7 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   if(!buffer)
   {
     std::cerr << "Input buffer for decoding is empty\n";
-    return;
+    return {};
   }
 
   std::memcpy(buffer, input_buffer.data(), byte_size);
@@ -58,7 +58,7 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   if(ogg_sync_pageout(&sync_state, &ogg_page) != 1)
   {
     std::cerr << "Error with sync pageout\n";
-    return;
+    return {};
   }
 
   ogg_stream_init(&stream_state, ogg_page_serialno(&ogg_page));
@@ -73,17 +73,17 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
     std::cout << ogg_page_serialno(&ogg_page) << "\n";
     std::cout << stream_state.serialno << "\n";
 
-    return;
+    return {};
   }
   if(ogg_stream_packetout(&stream_state, &ogg_packet) != 1)
   {
     std::cerr << "Error reading initial packet of OggStream\n";
-    return;
+    return {};
   }
   if(vorbis_synthesis_headerin(&v_info, &v_comment, &ogg_packet) < 0)
   {
     std::cerr << "OggStream has no vorbis data\n";
-    return;
+    return {};
   }
 
   // First two packets
@@ -107,30 +107,26 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
       if(result < 0)
       {
         std::cerr << "Corrupted\n";
-        return;
+        return {};
       }
       result = vorbis_synthesis_headerin(&v_info, &v_comment, &ogg_packet);
       if(result < 0)
       {
         std::cerr << "Corrupted\n";
-        return;
+        return {};
       }
       ++count;
     }
   }
 
-  char **pin = v_comment.user_comments;
-  while(*pin)
-  {
-    std::cout << *pin << "\n";
-    ++pin;
-  }
-  std::cout << "channel " << v_info.channels << " rate " << v_info.rate << "\n";
-
   int conv_size = byte_size / v_info.channels;
 
   // From the example, we should have parsed the three headers. Now we can initialize the vorbis
   // packet
+  std::vector<float> pcm_output;
+  long channels{v_info.channels};
+  long rate{v_info.rate};
+
   if(vorbis_synthesis_init(&v_dsp, &v_info) == 0)
   {
     vorbis_block_init(&v_dsp, &v_block);
@@ -145,7 +141,7 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
       if(result < 0)
       {
         std::cerr << "Corrupted\n";
-        return;
+        return {};
       }
       else
       {
@@ -158,13 +154,12 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
           if(second_result < 0)
           {
             std::cerr << "Corrupted\n";
-            return;
+            return {};
           }
           else
           {
             float **pcm;
-            int samples;
-            std::vector<ogg_uint16_t> pcm_output;
+            int samples{}; 
 
             if(vorbis_synthesis(&v_block, &ogg_packet) == 0)
               vorbis_synthesis_blockin(&v_dsp, &v_block);
@@ -175,14 +170,11 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
               int bout = std::min(samples, conv_size);
               pcm_output.reserve(bout * v_info.channels);
 
-              for(int i{}; i < v_info.channels; i++)
+              for(int j{}; j < bout; j++) 
               {
-                for(int j{}; j < bout; j++)
+                for(int i{}; i < v_info.channels; i++)  
                 {
-                  float sample = pcm[i][j];
-                  int value = std::floor(sample * 32767.0f + 0.5f);
-                  value = std::clamp(value, -32768, 32677);
-                  pcm_output.push_back(static_cast<int16_t>(value));
+                  pcm_output.push_back(pcm[i][j]);
                 }
               }
 
@@ -211,6 +203,8 @@ void DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   vorbis_info_clear(&v_info);
 
   ogg_sync_clear(&sync_state);
+
+  return {std::move(pcm_output), channels, rate};
 }
 
 } // namespace Audio

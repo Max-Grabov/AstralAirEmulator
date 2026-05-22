@@ -1,5 +1,8 @@
+#pragma once
+
 #include <cstddef>
 #include <vector>
+#include <audio_stream.hpp>
 
 namespace AstralAir
 {
@@ -7,7 +10,7 @@ namespace AstralAir
 namespace Audio
 {
 
-void DecodeOggContainer(const std::vector<std::byte> &);
+AudioStream DecodeOggContainer(const std::vector<std::byte> &);
 
 } // namespace Audio
 } // namespace AstralAir

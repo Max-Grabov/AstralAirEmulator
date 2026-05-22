@@ -2,7 +2,6 @@
 #include "bin.hpp"
 #include "data.hpp"
 
-#include <bit>
 #include <cstdint>
 #include <filesystem>
 
@@ -11,8 +10,6 @@
 // As these goats figured out the way to decode the binary files.
 namespace AstralAir
 {
-
-using Data::AstralAirData;
 
 namespace Formats
 {
@@ -37,9 +34,9 @@ BinFormat::BinFormat(const std::string &path) : file_view_(path)
   // TODO MORE
 }
 
-std::vector<AstralAirData> BinFormat::OpenAndRead()
+std::vector<Data::AstralAirData> BinFormat::OpenAndRead()
 {
-  std::vector<AstralAirData> data_collection;
+  std::vector<Data::AstralAirData> data_collection;
   uint32_t file_offset{8};
   uint64_t names_base_position{file_offset + index_size_};
   for(int i = 0; i < count_; ++i)

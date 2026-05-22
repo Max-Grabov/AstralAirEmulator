@@ -1,4 +1,5 @@
-#include <bit>
+#pragma once
+
 #include <cstddef>
 #include <cstdint>
 #include <endian.h>
@@ -19,7 +20,7 @@ public:
   View(const std::string &);
   ~View();
   View(View &) = delete;
-  View operator=(View &) = delete;
+  View &operator=(const View &) = delete;
   View(View &&) = default;
   View &operator=(View &&) = default;
 

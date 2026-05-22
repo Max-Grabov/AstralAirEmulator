@@ -1,10 +1,13 @@
 #include "bin.hpp"
+
 #include "data.hpp"
 #include "decoder.hpp"
+#include "audio_playback.hpp"
 
 #include "gtest/gtest.h"
+#include <SDL3/SDL.h>
 
-TEST(DecoderTest, DecodeTest)
+TEST(AudioTest, DecodeTest)
 {
   using namespace AstralAir::Audio;
   using AstralAir::Data::AstralAirData;
@@ -20,3 +23,4 @@ TEST(DecoderTest, DecodeTest)
   auto result = data_view.Read(offset, size);
   DecodeOggContainer(data_view.Read(offset, size));
 }
+
