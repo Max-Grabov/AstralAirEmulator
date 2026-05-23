@@ -16,10 +16,11 @@ TEST(AudioTest, DecodeTest)
   BinFormat bin("./AstralAirData/voice.bin");
   bin.OpenAndRead();
 
-  std::vector<std::byte> name = {std::byte('0'), std::byte('0'), std::byte('0'), std::byte('0'), std::byte('0'), std::byte('0'), std::byte('0'), std::byte('1'), std::byte('0')};
+  std::vector<std::byte> name = {std::byte('0'), std::byte('0'), std::byte('0'),
+                                 std::byte('0'), std::byte('0'), std::byte('0'),
+                                 std::byte('0'), std::byte('1'), std::byte('0')};
 
   auto result = bin.GetChunk(name);
   AudioStream stream = DecodeOggContainer(result);
   EXPECT_EQ(stream.GetChannels(), 48000);
 }
-

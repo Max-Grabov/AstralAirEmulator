@@ -1,8 +1,8 @@
 #pragma once
 
+#include <audio_stream.hpp>
 #include <cstddef>
 #include <vector>
-#include <audio_stream.hpp>
 
 namespace AstralAir
 {

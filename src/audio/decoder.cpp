@@ -28,7 +28,9 @@ AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   ogg_packet ogg_packet;
   vorbis_info v_info;
   vorbis_comment v_comment;
-  {}  vorbis_dsp_state v_dsp;
+  {
+  }
+  vorbis_dsp_state v_dsp;
   vorbis_block v_block;
 
   ogg_sync_init(&sync_state);
@@ -36,7 +38,9 @@ AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   if(input_buffer.size() == 0)
   {
     std::cerr << "Input stream for decoding is empty\n";
-    // This returns an empty vector and a channel & length of zero. I'd rather not throw a runtime exception when audio can't be decoded, so this way we later just check if these are empty fields when playing audio on some thread and then immediately return if so.
+    // This returns an empty vector and a channel & length of zero. I'd rather not throw a runtime
+    // exception when audio can't be decoded, so this way we later just check if these are empty
+    // fields when playing audio on some thread and then immediately return if so.
     return {};
   }
 
@@ -159,7 +163,7 @@ AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
           else
           {
             float **pcm;
-            int samples{}; 
+            int samples{};
 
             if(vorbis_synthesis(&v_block, &ogg_packet) == 0)
               vorbis_synthesis_blockin(&v_dsp, &v_block);
@@ -170,9 +174,9 @@ AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
               int bout = std::min(samples, conv_size);
               pcm_output.reserve(bout * v_info.channels);
 
-              for(int j{}; j < bout; j++) 
+              for(int j{}; j < bout; j++)
               {
-                for(int i{}; i < v_info.channels; i++)  
+                for(int i{}; i < v_info.channels; i++)
                 {
                   pcm_output.push_back(pcm[i][j]);
                 }

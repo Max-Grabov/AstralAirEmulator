@@ -1,7 +1,6 @@
 #include "bin.hpp"
 #include "gtest/gtest.h"
 
-
 TEST(BinTest, TestOpen)
 {
   using AstralAir::Data::AstralAirData;
@@ -10,7 +9,7 @@ TEST(BinTest, TestOpen)
   BinFormat bin("./AstralAirData/voice.bin");
   bin.OpenAndRead();
 
-  AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");  
+  AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");
   std::vector<std::byte> query = voice_view.Read(448624, 278483);
 
   EXPECT_EQ(33048, bin.CollectionSize());
@@ -26,7 +25,7 @@ TEST(BinTest, TestDataReadHeader)
   BinFormat bin("./AstralAirData/voice.bin");
   bin.OpenAndRead();
 
-  AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");  
+  AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");
   std::vector<std::byte> query = voice_view.Read(448624, 278483);
 
   auto result = bin.GetChunk(query);
