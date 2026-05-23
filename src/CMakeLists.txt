@@ -1,6 +1,5 @@
 
 set(FORMATS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/formats)
-set(DATA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/data)
 set(AUDIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/audio)
 
 add_library(Formats
@@ -16,7 +15,6 @@ add_library(Audio
 
 target_include_directories(Formats PUBLIC  
   ${FORMATS_SRC} 
-  ${DATA_SRC}
 )
 
 target_include_directories(Audio PUBLIC

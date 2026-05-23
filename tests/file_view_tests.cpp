@@ -44,8 +44,9 @@ TEST(FileViewTest, FileReadUInt32)
 {
   AstralAir::Formats::View view{"./AstralAirData/voice.bin"};
   /*0x18810000  0x1b0b0500*/
-  uint64_t test_array[8] = {0x0008118,  0x00050b1b, 0x00000000, 0x000b1843,
-                            0x00009941, 0x0000000a, 0x000bb184, 0x00008ef3};
+  
+  uint64_t test_array[8] = {0x18810000, 0x1b0b0500, 0x00000000,0x43180b00,
+                            0x41990000, 0x0a000000, 0x84b10b00, 0xf38e0000};
 
   EXPECT_TRUE(view.ValidPath());
   for(uint64_t it{0}; it < 8; ++it)

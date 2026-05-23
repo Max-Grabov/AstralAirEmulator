@@ -3,6 +3,7 @@
 #include "file_view.hpp"
 
 #include <cstdint>
+#include <map>
 #include <vector>
 
 namespace AstralAir
@@ -19,6 +20,8 @@ namespace Formats
 class BinFormat
 {
 private:
+  using EntryName = std::vector<std::byte>;
+
   enum FileType
   {
     VOICE,
@@ -26,21 +29,29 @@ private:
     GRAPH,
   };
 
-  uint32_t count_;
-  uint64_t index_size_;
-  uint32_t name_index_size_;
+  struct Entry
+  {
+    uint32_t offset;
+    uint32_t size;
+  };
+
+  std::map<EntryName, Entry> data_collection_;
   View file_view_;
-  FileType file_type_;
+  FileType file_type_; 
 
 public:
-  BinFormat(const std::string &path);
+  explicit BinFormat(const std::string &path);
   virtual ~BinFormat() = default;
   BinFormat(const BinFormat &other) = delete;
   BinFormat(BinFormat &&other) = default;
   BinFormat &operator=(const BinFormat &other) = delete;
   BinFormat &operator=(BinFormat &&other) = default;
 
-  std::vector<AstralAir::Data::AstralAirData> OpenAndRead();
+  size_t CollectionSize() const;
+  void OpenAndRead();
+  bool HasEntry(const EntryName &) const;
+  Entry QueryEntry(const EntryName &) const;
+  std::vector<std::byte> GetChunk(const EntryName &, const uint32_t = 0);
 };
 
 } // namespace Formats

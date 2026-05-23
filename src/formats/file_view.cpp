@@ -41,7 +41,7 @@ T View::Read(const uint64_t offset, const std::function<void(std::vector<std::by
 
   if(!ValidPath())
   {
-    return 0;
+    throw std::runtime_error("Provided file path does not exist! Provided path is: " + file_name_);
   }
 
   if(offset > byte_size_)
@@ -89,7 +89,7 @@ std::vector<std::byte> View::Read(const uint64_t offset, const uint64_t size,
 {
   if(!ValidPath())
   {
-    return {};
+    throw std::runtime_error("Provided file path does not exist! Provided path is: " + file_name_);
   }
 
   if(offset > byte_size_)
