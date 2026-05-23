@@ -48,7 +48,6 @@ target_link_libraries(Audio PRIVATE vorbis)
 
 if(${USE_SDL3}) 
   # Maybe find a way to link to only audio? TODO
-  target_include_directories(Audio PUBLIC ${sdl3_SOURCE_DIR}/include)
-  target_link_libraries(Audio PUBLIC SDL3-shared) 
+  target_link_libraries(Audio PUBLIC SDL3::SDL3) 
 endif()
 
