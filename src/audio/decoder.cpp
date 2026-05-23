@@ -28,8 +28,6 @@ AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
   ogg_packet ogg_packet;
   vorbis_info v_info;
   vorbis_comment v_comment;
-  {
-  }
   vorbis_dsp_state v_dsp;
   vorbis_block v_block;
 
