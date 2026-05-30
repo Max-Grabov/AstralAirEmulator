@@ -1,6 +1,8 @@
 
 set(FORMATS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/formats)
 set(AUDIO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/audio)
+set(IMAGE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/image)
+set(UTIL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/util)
 
 add_library(Formats
   ${FORMATS_SRC}/bin.cpp
@@ -13,12 +15,21 @@ add_library(Audio
   ${AUDIO_SRC}/audio_playback.cpp
 )
 
+add_library(Image
+  ${IMAGE_SRC}/image_hzc.cpp
+)
+
 target_include_directories(Formats PUBLIC  
   ${FORMATS_SRC} 
 )
 
 target_include_directories(Audio PUBLIC
   ${AUDIO_SRC}
+)
+
+target_include_directories(Image PUBLIC
+  ${IMAGE_SRC}
+  ${UTIL_SRC}
 )
 
 option(USE_SDL3 "Use SDL3 Library" ON)

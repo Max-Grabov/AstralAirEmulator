@@ -22,13 +22,6 @@ class BinFormat
 private:
   using EntryName = std::vector<std::byte>;
 
-  enum FileType
-  {
-    VOICE,
-    BGM,
-    GRAPH,
-  };
-
   struct Entry
   {
     uint32_t offset;
@@ -37,7 +30,6 @@ private:
 
   std::map<EntryName, Entry> data_collection_;
   View file_view_;
-  FileType file_type_;
 
 public:
   explicit BinFormat(const std::string &path);

@@ -2,7 +2,6 @@
 #include "bin.hpp"
 
 #include <cstdint>
-#include <filesystem>
 #include <stdexcept>
 #include <utility>
 
@@ -16,19 +15,7 @@ namespace Formats
 {
 
 BinFormat::BinFormat(const std::string &path) : file_view_(path)
-{
-  // We assume the files are exactly the proper data files, there should be proper checks before
-  // reading more
-  if(std::filesystem::path(path).filename() == "voice")
-  {
-    file_type_ = FileType::VOICE;
-  }
-  else if(std::filesystem::path(path).filename() == "bgm")
-  {
-    file_type_ = FileType::BGM;
-  }
-  // TODO MORE
-}
+{}
 
 size_t BinFormat::CollectionSize() const { return data_collection_.size(); }
 
@@ -68,15 +55,16 @@ BinFormat::Entry BinFormat::QueryEntry(const EntryName &name) const
   return data_collection_.at(name);
 }
 
-/* This function grabs a certainc chunk of data from a query. The default chunk size is 0, which
- * grabs the full block of memory of the data and returns it back. Supplying an amount for the chunk
- * returns a portion of it, being a size of amount bytes. This allows for grabbing pieces of asset
- * data (for audio streams) instead of being forced to load 100MB into RAM at once
+/* This function grabs a certain chunk of data from a query. The default chunk size is 0, which
+ * grabs the full block of memory of the data and returns it back. Supplying a positive amount for the chunk
+ * returns a portion of it, being the amount bytes. This allows for grabbing pieces of asset
+ * data (for audio streams especially) instead of being forced to load 100MB into RAM at once
+ * If supplying a size that is greater than the size of the Entry, it will cap out to the entry size.
  */
 std::vector<std::byte> BinFormat::GetChunk(const EntryName &name, const uint32_t amount)
 {
   Entry entry_data = QueryEntry(name);
-  return file_view_.Read(entry_data.offset, (amount <= 0 ? entry_data.size : amount));
+  return file_view_.Read(entry_data.offset, ((amount <= 0 || amount > entry_data.size) ? entry_data.size : amount));
 }
 
 } // namespace Formats
