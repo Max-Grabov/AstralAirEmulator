@@ -20,12 +20,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   AstralAir::Formats::BinFormat voice_bin("./AstralAirData/voice.bin");
  
   bgm_bin.OpenAndRead();
-  voice_bin.OpenAndRead();
-  
+  voice_bin.OpenAndRead(); 
 
   // For testing, we will read the bgm 0 name from the file so it is easy to query, essentially copying the first part of BinFormat::OpenAndRead() for sample
   AstralAir::Formats::View bgm_view("./AstralAirData/bgm.bin");  
-  std::vector<std::byte> query = bgm_view.Read(728, 240);
+  std::vector<std::byte> query = bgm_view.Read(728, 3);
 
   auto bgm_data_stream = AstralAir::Audio::DecodeOggContainer(bgm_bin.GetChunk(query));
 

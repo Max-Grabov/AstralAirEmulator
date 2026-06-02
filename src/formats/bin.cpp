@@ -1,9 +1,12 @@
 
 #include "bin.hpp"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 // File decoding for the binary files is heavily based on
 // https://github.com/morkt/GARbro/blob/master/ArcFormats/Favorite/ArcBIN.cs
@@ -25,17 +28,30 @@ void BinFormat::OpenAndRead()
   uint32_t index_size = count * 12;
   uint32_t name_index_size = file_view_.Read<uint32_t>(4);
   uint32_t file_offset{8};
-  uint64_t names_base_position{file_offset + index_size};
+  uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
+  uint64_t names_base_position{file_offset + index_size}; 
 
+  //tspmo
+  std::vector<std::byte> total_name_index_buffer = file_view_.Read(names_base_position + filename_offset, name_index_size - filename_offset);
+
+  uint32_t holder{};
   for(int i = 0; i < count; ++i)
   {
-    uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
+    filename_offset = file_view_.Read<uint32_t>(file_offset);
 
     if(filename_offset >= name_index_size)
       throw std::runtime_error("Offset bigger than name index");
 
-    EntryName name_buffer{
-        file_view_.Read(names_base_position + filename_offset, name_index_size - filename_offset)};
+    // For some reason, the initial reading for file offset makes the read to the name_buffer have a massive size instead of the proper size. We instead opt for putting the buffer
+    // entirely into the vector to hold all of the data, and then copying over the specific name sizes,this lead to a massive time speedup (10x) for reading data.
+    // Most likely there is a faster way to do this via memory mapping but not too familiar yet. A key limitation is for some reason one of the data points for "voice" doesnt follow the same formatting as the rest (read isnt producing monotonic increasing values due to this). So we can't assume that other files follow a monotonic increasing offset pattern. Otherwise, we could use previous and next offsets to directly read into the name_buffer vector 
+    // Instead, we opt for reading until null terminator for each name in the big buffer and then pass that into the individual name buffers
+    uint32_t beginning{holder};
+    while(total_name_index_buffer[holder++] != std::byte(0));
+
+    EntryName name_buffer(holder - beginning - 1);
+    std::copy(total_name_index_buffer.begin() + beginning, total_name_index_buffer.begin() + holder - 1, name_buffer.begin());
+
     Entry entry{file_view_.Read<uint32_t>(file_offset + 4),
                 file_view_.Read<uint32_t>(file_offset + 8)};
     data_collection_.emplace(std::move(name_buffer), std::move(entry));
@@ -47,7 +63,7 @@ void BinFormat::OpenAndRead()
  * OpenAndRead() yet, this will obviously return false as the map is empty */
 bool BinFormat::HasEntry(const EntryName &name) const
 {
-  return data_collection_.find(name) != data_collection_.end();
+  return data_collection_.contains(name);
 }
 
 BinFormat::Entry BinFormat::QueryEntry(const EntryName &name) const
