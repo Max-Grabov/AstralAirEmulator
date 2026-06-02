@@ -17,7 +17,8 @@ TEST(AudioTest, DecodeTest)
   bin.OpenAndRead();
 
   AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");
-  std::vector<std::byte> query = voice_view.Read(448624, 278483);
+  std::vector<std::byte> query =
+      voice_view.Read(8 + voice_view.Read<uint32_t>(0) * 12 + voice_view.Read<uint32_t>(8), 9);
 
   auto result = bin.GetChunk(query);
   AudioStream stream = DecodeOggContainer(result);

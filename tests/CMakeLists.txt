@@ -19,33 +19,33 @@ add_executable(bin_tests bin_tests.cpp)
 
 add_executable(utility_tests utility_tests.cpp)
 
-target_link_libraries(
-audio_tests PUBLIC AudioBase FormatsBase)
+target_link_libraries(audio_tests PUBLIC AudioBase FormatsBase)
 
-target_link_libraries(
-file_view_tests PUBLIC FormatsBase)
+target_link_libraries(file_view_tests PUBLIC FormatsBase)
 
 target_link_libraries(bin_tests PUBLIC FormatsBase)
 
 target_link_libraries(utility_tests PUBLIC Base)
 
 target_include_directories(
-utility_tests PUBLIC
-"${CMAKE_SOURCE_DIR}/src/util")
+  utility_tests PUBLIC
+    "${CMAKE_SOURCE_DIR}/src/util"
+)
 
 set_target_properties(
-audio_tests PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY
-"${CMAKE_BINARY_DIR}/tests/audio")
+  audio_tests PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/tests/audio"
+)
 
 set_target_properties(
-file_view_tests PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY
-"${CMAKE_BINARY_DIR}/tests/"
-"formats")
+  file_view_tests PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/tests/formats"
+)
 
 set_target_properties(
-bin_tests PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY
-"${CMAKE_BINARY_DIR}/tests/"
-"formats")
+  bin_tests PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/tests/formats"
+)
