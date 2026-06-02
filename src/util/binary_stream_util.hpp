@@ -2,12 +2,12 @@
 
 #include <algorithm>
 #include <bit>
-#include <cstring>
-#include <vector>
-#include <type_traits>
 #include <cstddef>
-#include <stdexcept>
+#include <cstring>
 #include <iostream>
+#include <stdexcept>
+#include <type_traits>
+#include <vector>
 
 namespace AstralAir
 {
@@ -15,15 +15,14 @@ namespace AstralAir
 namespace Utility
 {
 
-template <typename T>
-T Get(const std::vector<std::byte> &stream, size_t offset)
+template <typename T> T Get(const std::vector<std::byte> &stream, size_t offset)
 {
   static_assert(std::is_standard_layout_v<T> && std::is_trivial_v<T>,
-                "Type can't be reinterpret casted"); 
+                "Type can't be reinterpret casted");
 
   if(offset > stream.size())
   {
-    throw std::runtime_error("Offset is larger than size");  
+    throw std::runtime_error("Offset is larger than size");
   }
 
   if(offset + sizeof(T) > stream.size())
@@ -38,11 +37,11 @@ T Get(const std::vector<std::byte> &stream, size_t offset)
   return data;
 }
 
-template<std::endian E>
-void ConvertToEndian(std::vector<std::byte> &stream)
+template <std::endian E> void ConvertToEndian(std::vector<std::byte> &stream)
 {
-  if(std::endian::native == E) return;   
+  if(std::endian::native == E)
+    return;
   std::reverse(stream.begin(), stream.end());
 }
-}
-}
+} // namespace Utility
+} // namespace AstralAir

@@ -9,9 +9,12 @@ TEST(BinTest, TestOpen)
   BinFormat bin("./AstralAirData/voice.bin");
   bin.OpenAndRead();
 
-  // In a real scenario, we wouldn't need to set up another view to the same file to query. this is done since I don't have access/dont remember any data names, so we just grab on at the offset to use as the test query
+  // In a real scenario, we wouldn't need to set up another view to the same file to query. this is
+  // done since I don't have access/dont remember any data names, so we just grab on at the offset
+  // to use as the test query
   AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");
-  std::vector<std::byte> query = voice_view.Read(8 + voice_view.Read<uint32_t>(0) * 12 + voice_view.Read<uint32_t>(8), 9);
+  std::vector<std::byte> query =
+      voice_view.Read(8 + voice_view.Read<uint32_t>(0) * 12 + voice_view.Read<uint32_t>(8), 9);
 
   EXPECT_EQ(33048, bin.CollectionSize());
   EXPECT_TRUE(bin.HasEntry(query));
@@ -27,7 +30,8 @@ TEST(BinTest, TestDataReadHeader)
   bin.OpenAndRead();
 
   AstralAir::Formats::View voice_view("./AstralAirData/voice.bin");
-  std::vector<std::byte> query = voice_view.Read(8 + voice_view.Read<uint32_t>(0) * 12 + voice_view.Read<uint32_t>(8), 9);
+  std::vector<std::byte> query =
+      voice_view.Read(8 + voice_view.Read<uint32_t>(0) * 12 + voice_view.Read<uint32_t>(8), 9);
 
   auto result = bin.GetChunk(query);
 
@@ -44,10 +48,11 @@ TEST(BinTest, TestImageRead)
   using AstralAir::Formats::View;
 
   BinFormat bin("./AstralAirData/graph_vis.bin");
-  bin.OpenAndRead(); 
+  bin.OpenAndRead();
 
   AstralAir::Formats::View g_view("./AstralAirData/graph_vis.bin");
-  std::vector<std::byte> query = g_view.Read(8 + g_view.Read<uint32_t>(0) * 12 + g_view.Read<uint32_t>(8), 9); 
+  std::vector<std::byte> query =
+      g_view.Read(8 + g_view.Read<uint32_t>(0) * 12 + g_view.Read<uint32_t>(8), 9);
 
   EXPECT_TRUE(bin.HasEntry(query));
 }

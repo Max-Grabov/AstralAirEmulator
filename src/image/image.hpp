@@ -11,5 +11,5 @@ private:
 public:
   ImageData();
 };
-}
-}
+} // namespace Image
+} // namespace AstralAir

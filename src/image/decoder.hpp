@@ -1,7 +1,7 @@
 #pragma once
 
-#include "image_hzc.hpp"
 #include "image.hpp"
+#include "image_hzc.hpp"
 
 namespace AstralAir
 {
@@ -9,7 +9,7 @@ namespace AstralAir
 namespace Image
 {
 
-ImageData DecodeHZC( 
+ImageData DecodeHZC(
 
 }
-}
+} // namespace AstralAir

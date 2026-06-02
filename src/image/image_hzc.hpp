@@ -1,9 +1,9 @@
-#pragma once 
+#pragma once
 
 #include <concepts>
-#include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace AstralAir
 {
@@ -23,16 +23,16 @@ private:
     uint16_t offset_x;
     uint16_t offset_y;
     uint32_t unpacked_size;
-    uint32_t header_size; 
-  };   
+    uint32_t header_size;
+  };
 
 public:
-  template<typename T> requires std::convertible_to<std::vector<std::byte>, T>
-  explicit HZC_Format(T &&stream) : stream_(std::forward<T>(stream)) {} 
-  
+  template <typename T>
+  requires std::convertible_to<std::vector<std::byte>, T>
+  explicit HZC_Format(T &&stream) : stream_(std::forward<T>(stream)) {}
+
   void OpenAndReadMetaData();
 };
 
-
-}
-}
+} // namespace Image
+} // namespace AstralAir
