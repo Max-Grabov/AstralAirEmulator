@@ -9,7 +9,6 @@
 TEST(AudioTest, DecodeTest)
 {
   using namespace AstralAir::Audio;
-  using AstralAir::Data::AstralAirData;
   using AstralAir::Formats::BinFormat;
   using AstralAir::Formats::View;
 

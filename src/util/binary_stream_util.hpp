@@ -2,15 +2,19 @@
 
 #include <algorithm>
 #include <bit>
+#include <concepts>
 #include <cstddef>
 #include <cstring>
-#include <concepts>
+#include <iostream>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
 
-template<typename T>
-concept Gettable = std::is_standard_layout_v<T> && std::is_trivial_v<T>; 
+template <typename T>
+concept Gettable = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
+
+template <typename T>
+concept EndianSwappable = std::is_integral_v<T> || std::is_floating_point_v<T>;
 
 namespace AstralAir
 {
@@ -33,15 +37,30 @@ template <Gettable T> T Get(const std::vector<std::byte> &stream, size_t offset)
   T data{};
 
   std::memcpy(&data, stream.data() + offset, sizeof(T));
-
   return data;
 }
 
 template <std::endian E> void ConvertToEndian(std::vector<std::byte> &stream)
 {
-  if(std::endian::native == E)
+  if constexpr(std::endian::native == E)
     return;
   std::reverse(stream.begin(), stream.end());
 }
+
+template <std::endian E, EndianSwappable T> void ConvertToEndian(T &value)
+{
+  std::reverse(reinterpret_cast<std::byte *>(&value),
+               reinterpret_cast<std::byte *>(&value) + sizeof(T));
+}
+
+inline void PrintAsString(const std::vector<std::byte> &stream)
+{
+  for(const auto &b : stream)
+  {
+    std::cout << static_cast<char>(b);
+  }
+  std::cout << "\n";
+}
+
 } // namespace Utility
 } // namespace AstralAir

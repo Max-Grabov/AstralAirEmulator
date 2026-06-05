@@ -18,14 +18,15 @@ private:
     uint16_t height;
     uint16_t offset_x;
     uint16_t offset_y;
+    uint16_t bpp;
     uint32_t unpacked_size;
     uint32_t header_size;
-  }; 
+  };
 
-public: 
+public:
   ImageMetaData meta_data_;
 
-  Image();
+  Image(){};
 };
 } // namespace Image
 } // namespace AstralAir

@@ -1,5 +1,6 @@
 #include "binary_stream_util.hpp"
 #include "gtest/gtest.h"
+
 #include <vector>
 
 TEST(UtilTest, TestGet)
@@ -8,11 +9,26 @@ TEST(UtilTest, TestGet)
 
   std::vector<std::byte> t{};
   t.emplace_back(std::byte(0));
-  t.emplace_back(std::byte(1));
-  t.emplace_back(std::byte(2));
+  t.emplace_back(std::byte(0));
+  t.emplace_back(std::byte(0));
   t.emplace_back(std::byte(3));
 
   uint32_t test_value{Get<uint32_t>(t, 0)};
+  EXPECT_EQ(test_value, 0x03000000);
+}
 
-  EXPECT_EQ(test_value, 0x03020100);
+TEST(UtilTest, TestConvertEndian)
+{
+  using namespace AstralAir::Utility;
+
+  std::vector<std::byte> t{};
+  t.emplace_back(std::byte(0));
+  t.emplace_back(std::byte(0));
+  t.emplace_back(std::byte(0));
+  t.emplace_back(std::byte(3));
+
+  uint32_t test_value{Get<uint32_t>(t, 0)};
+  EXPECT_EQ(test_value, 0x03000000);
+  ConvertToEndian<std::endian::little>(test_value);
+  EXPECT_EQ(test_value, 0x00000003);
 }

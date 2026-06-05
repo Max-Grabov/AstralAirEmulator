@@ -18,9 +18,9 @@ public:
   AudioStream(std::vector<float> &, long, long);
   AudioStream(std::vector<float> &&, long, long);
   AudioStream();
-  const std::vector<float> &GetStream() const { return stream_; }
-  long GetChannels() const { return channels_; }
-  long GetRate() const { return rate_; }
+  inline const std::vector<float> &GetStream() const { return stream_; }
+  inline long GetChannels() const { return channels_; }
+  inline long GetRate() const { return rate_; }
 };
 } // namespace Audio
 } // namespace AstralAir
