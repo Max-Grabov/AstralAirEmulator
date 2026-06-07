@@ -42,8 +42,4 @@ TEST(HZC_StreamTest, TestGetImage)
 
   std::vector<std::byte> data = bin.GetChunk(query);
   std::optional<HZC_Stream> hzc = HZC_Stream::Construct(std::move(data));
-  if(hzc.has_value())
-  {
-    hzc.value().PrintImageMetaData();
-  }
 }

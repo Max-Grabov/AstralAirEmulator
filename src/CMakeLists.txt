@@ -66,7 +66,7 @@ FetchContent_MakeAvailable(vorbis)
 
 target_link_libraries(Audio PRIVATE vorbis)
 
-target_link_libraries(Image PRIVATE zstr::zstr)
+target_link_libraries(Image PUBLIC zstr::zstr)
 
 if(${USE_SDL3}) 
   # Maybe find a way to link to only audio? TODO

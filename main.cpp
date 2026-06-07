@@ -7,6 +7,7 @@
 #include "bin.hpp"
 #include "decoder.hpp"
 #include "hzc_stream.hpp"
+#include "image.hpp"
 #include <vector>
 
 #define SDL_MAIN_USE_CALLBACKS
@@ -62,9 +63,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   std::optional<AstralAir::Image::HZC_Stream> hzc = AstralAir::Image::HZC_Stream::Construct(std::move(data));
   if(hzc.has_value())
   {
-    // Needs to be refactored into free function for texture creation
-    texture_image = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC, 2048, 1280);
-    SDL_UpdateTexture(texture_image, nullptr, reinterpret_cast<const void *>(hzc.value().GetImage().get()), 3 * 2048);
+    AstralAir::Image::Image image = AstralAir::Image::CreateImage(hzc.value()); 
+    texture_image = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC, image.GetMetaData().width, image.GetMetaData().height);
+    SDL_UpdateTexture(texture_image, nullptr, reinterpret_cast<const void *>(image.GetPixels().data()), 3 * image.GetMetaData().width);
   } 
   SDL_ResumeAudioStreamDevice(bgm_stream);
 
