@@ -12,7 +12,7 @@
 #include <cstring>
 #include <iostream>
 
-// Ogg Stream decoding taken and adapted from this example here ->
+// Ogg Stream decoding adapted from this example here ->
 // https://github.com/xiph/vorbis/blob/main/examples/decoder_example.c
 namespace AstralAir
 {
