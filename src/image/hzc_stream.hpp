@@ -66,8 +66,8 @@ public:
     // 78 5E
     // 78 9C
     // 78 DA
-    uint32_t zlib_header{Utility::Get<uint32_t>(stream, Utility::Get<uint32_t>(stream, 8) + 12)};
-    Utility::ConvertToEndian<std::endian::little, uint32_t>(zlib_header);
+    uint16_t zlib_header{Utility::Get<uint16_t>(stream, Utility::Get<uint32_t>(stream, 8) + 12)};
+    Utility::ConvertToEndian<std::endian::little, uint16_t>(zlib_header);
     if((zlib_header % 31) != 0)
     {
       return std::nullopt; 
