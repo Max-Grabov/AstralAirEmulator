@@ -6,7 +6,7 @@
 #include "bin.hpp"
 #include "decoder.hpp"
 #include "file_view.hpp"
-#include "hzc_stream.hpp"
+#include "image_decoder.hpp"
 #include "image.hpp"
 #include <vector>
 
@@ -44,6 +44,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
   AstralAir::Formats::View bg_view("./AstralAirData/graph_vis.bin");
   AstralAir::Formats::View bg_bg_view("./AstralAirData/graph_bg.bin");
   AstralAir::Formats::View bgm_view("./AstralAirData/bgm.bin");
+
   std::vector<std::byte> query = bgm_view.Read(728, 3);
   std::vector<std::byte> image_query =
       bg_view.Read(8 + bg_view.Read<uint32_t>(0) * 12 + bg_view.Read<uint32_t>(8), 9);
@@ -69,30 +70,30 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
   std::vector<std::byte> image_data = bg_vis_bin.GetChunk(image_query);
   std::vector<std::byte> bg_data = bg_bin.GetChunk(bg_query);
-  std::optional<AstralAir::Image::HZC_Stream> hzc_img =
-      AstralAir::Image::HZC_Stream::Construct(std::move(image_data));
-  std::optional<AstralAir::Image::HZC_Stream> hzc_bg =
-      AstralAir::Image::HZC_Stream::Construct(std::move(bg_data));
 
   // Test out textures for BG
-  if(hzc_img.has_value())
+  
+  std::optional<AstralAir::Image::Image> image = AstralAir::Image::CreateImage(std::move(image_data));
+  if(image.has_value())
   {
-    AstralAir::Image::Image image = AstralAir::Image::CreateImage(hzc_img.value());
+
     texture_image = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC,
-                                      image.GetMetaData().width, image.GetMetaData().height);
+                                      image.value().GetMetaData().width, image.value().GetMetaData().height);
     SDL_UpdateTexture(texture_image, nullptr,
-                      reinterpret_cast<const void *>(image.GetPixels().data()),
-                      3 * image.GetMetaData().width);
+                      reinterpret_cast<const void *>(image.value().GetPixels().data()),
+                      3 * image.value().GetMetaData().width);
   }
 
-  if(hzc_bg.has_value())
+  
+  std::optional<AstralAir::Image::Image> bg_image = AstralAir::Image::CreateImage(std::move(bg_data));
+  if(bg_image.has_value())
   {
-    AstralAir::Image::Image image = AstralAir::Image::CreateImage(hzc_bg.value());
     texture_bg = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC,
-                                   image.GetMetaData().width, image.GetMetaData().height);
-    SDL_UpdateTexture(texture_bg, nullptr, reinterpret_cast<const void *>(image.GetPixels().data()),
-                      3 * image.GetMetaData().width);
+                                   bg_image.value().GetMetaData().width, bg_image.value().GetMetaData().height);
+    SDL_UpdateTexture(texture_bg, nullptr, reinterpret_cast<const void *>(bg_image.value().GetPixels().data()),
+                      3 * bg_image.value().GetMetaData().width);
   }
+
   SDL_ResumeAudioStreamDevice(bgm_stream);
 
   return SDL_APP_CONTINUE;

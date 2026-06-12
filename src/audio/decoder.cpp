@@ -1,7 +1,10 @@
 #include "decoder.hpp"
-
 #include "audio_stream.hpp"
+#include "binary_stream_util.hpp"
+#include <bit>
+
 #include "vorbis/codec.h"
+#include <iterator>
 #include <ogg/config_types.h>
 #include <ogg/ogg.h>
 
@@ -11,6 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <optional>
 
 // Ogg Stream decoding adapted from this example here ->
 // https://github.com/xiph/vorbis/blob/main/examples/decoder_example.c
@@ -19,6 +23,96 @@ namespace AstralAir
 
 namespace Audio
 {
+
+/* Returns an AudioStream if the stream successfully passes the checks necessary to be a WAV format, otherwise returns a null optional.
+ * This function will invalidate the input_buffer as it will be moved to the new audio stream.
+ */
+std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&input_buffer)
+{
+  // RIFF Chunk
+  if(input_buffer.size() < 44)
+  {
+    return std::nullopt;      
+  }    
+
+  uint32_t id{Utility::Get<uint32_t>(input_buffer, 0)};
+  Utility::ConvertToEndian<std::endian::little>(id);
+  if(id != 0x52494646)
+  {
+    return std::nullopt;
+  }
+
+  uint32_t size{Utility::Get<uint32_t>(input_buffer, 4)};
+  if(size + 8 != input_buffer.size())
+  {
+    return std::nullopt;
+  }
+
+  uint32_t format{Utility::Get<uint32_t>(input_buffer, 8)};
+  Utility::ConvertToEndian<std::endian::little>(format);
+  if(format != 0x57415645)
+  {
+    return std::nullopt;
+  }
+
+  // fmt sub chunk
+  uint32_t fmt_format{Utility::Get<uint32_t>(input_buffer, 12)};
+  Utility::ConvertToEndian<std::endian::little>(fmt_format); 
+  if(fmt_format != 0x666d7420)
+  {
+    return std::nullopt;
+  }
+
+  uint32_t fmt_chunk_size{Utility::Get<uint32_t>(input_buffer, 16)}; 
+  if(fmt_chunk_size != 0x00000010)
+  {
+    return std::nullopt;
+  }
+
+  uint16_t channels{Utility::Get<uint16_t>(input_buffer, 22)};
+  uint16_t rate{Utility::Get<uint16_t>(input_buffer, 24)};
+  uint16_t bits_per_sample{Utility::Get<uint16_t>(input_buffer, 34)};
+  uint32_t byte_rate{Utility::Get<uint32_t>(input_buffer, 28)};
+  if(byte_rate != rate * channels * bits_per_sample / 8)
+  {
+    return std::nullopt;
+  }
+
+  uint16_t block_align{Utility::Get<uint16_t>(input_buffer, 32)};
+  if(block_align != channels * bits_per_sample / 8)
+  {
+    return std::nullopt;
+  }
+
+  // data sub chunk
+  uint32_t data_id{Utility::Get<uint32_t>(input_buffer, 36)};
+  Utility::ConvertToEndian<std::endian::little>(data_id);
+  if(data_id != 0x4C495354)
+  {
+    return std::nullopt;
+  } 
+
+  uint32_t pad_string{Utility::Get<uint32_t>(input_buffer, 110)};
+  Utility::ConvertToEndian<std::endian::little>(pad_string); 
+  if(pad_string != 0x50414420)
+  {
+    return std::nullopt;
+  }
+
+  uint32_t pad_value{Utility::Get<uint32_t>(input_buffer, 114)};
+  uint32_t data_string{Utility::Get<uint32_t>(input_buffer, 118 + pad_value)};
+  Utility::ConvertToEndian<std::endian::little>(data_string);
+  if(data_string != 0x64617461)
+  {
+    return std::nullopt;
+  }  
+  
+  uint32_t data_size{Utility::Get<uint32_t>(input_buffer, 118 + pad_value + 4)}; 
+  std::vector<float> pcm(data_size);
+
+  std::move(input_buffer.begin() + 118 + pad_value + 4 + 4, input_buffer.end(), std::back_inserter(input_buffer));
+  return AudioStream(std::move(pcm), channels, rate);
+}
 
 AudioStream DecodeOggContainer(const std::vector<std::byte> &input_buffer)
 {

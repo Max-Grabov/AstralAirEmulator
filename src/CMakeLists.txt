@@ -18,7 +18,8 @@ add_library(Audio
 )
 
 add_library(Image
-  ${IMAGE_SRC}/hzc_stream.cpp
+  ${IMAGE_SRC}/image_decoder.cpp
+  ${IMAGE_SRC}/image.cpp
 )
 
 target_include_directories(Formats PUBLIC  
@@ -27,6 +28,7 @@ target_include_directories(Formats PUBLIC
 
 target_include_directories(Audio PUBLIC
   ${AUDIO_SRC}
+  ${UTIL_SRC}
 )
 
 target_include_directories(Image PUBLIC

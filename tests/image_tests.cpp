@@ -1,5 +1,6 @@
 #include "bin.hpp"
-#include "hzc_stream.hpp"
+#include "image.hpp"
+#include "image_decoder.hpp"
 #include "gtest/gtest.h"
 
 #include <cstddef>
@@ -7,27 +8,7 @@
 #include <utility>
 #include <vector>
 
-TEST(HZC_StreamTest, TestConstruct)
-{
-  using namespace AstralAir::Image;
-  using AstralAir::Formats::BinFormat;
-  using AstralAir::Formats::View;
-
-  BinFormat bin("./AstralAirData/graph_vis.bin");
-  bin.OpenAndRead();
-
-  View g_view("./AstralAirData/graph_vis.bin");
-  std::vector<std::byte> query =
-      g_view.Read(8 + g_view.Read<uint32_t>(0) * 12 + g_view.Read<uint32_t>(8), 9);
-
-  std::vector<std::byte> data = bin.GetChunk(query);
-  EXPECT_TRUE(HZC_Stream::Construct(std::move(data)));
-
-  std::vector<std::byte> junk = g_view.Read(2, 9);
-  EXPECT_FALSE(HZC_Stream::Construct(std::move(junk)));
-}
-
-TEST(HZC_StreamTest, TestGetImage)
+TEST(StreamTest, TestGetImage)
 {
   using namespace AstralAir::Image;
   using AstralAir::Formats::BinFormat;
@@ -67,15 +48,19 @@ TEST(HZC_StreamTest, TestGetImage)
   std::vector<std::byte> bs_data = bs_bin.GetChunk(bs_query);
   std::vector<std::byte> g_data = g_bin.GetChunk(g_query);
 
-  std::optional<HZC_Stream> vis_hzc = HZC_Stream::Construct(std::move(vis_data)); 
-  std::optional<HZC_Stream> sd_hzc = HZC_Stream::Construct(std::move(sd_data));
-  std::optional<HZC_Stream> bg_hzc = HZC_Stream::Construct(std::move(bg_data));
-  std::optional<HZC_Stream> bs_hzc = HZC_Stream::Construct(std::move(bs_data));
-  std::optional<HZC_Stream> g_hzc = HZC_Stream::Construct(std::move(g_data));
+  std::optional<Image> vis_hzc = CreateImage(std::move(vis_data)); 
+  std::optional<Image> sd_hzc = CreateImage(std::move(sd_data));
+  std::optional<Image> bg_hzc = CreateImage(std::move(bg_data));
+  std::optional<Image> bs_hzc = CreateImage(std::move(bs_data));
+  std::optional<Image> g_hzc = CreateImage(std::move(g_data));
+
+  std::vector<std::byte> foo_v = {std::byte{0}};
+  std::optional<Image> foo = CreateImage(std::move(foo_v));
 
   EXPECT_TRUE(vis_hzc);
   EXPECT_TRUE(sd_hzc);
   EXPECT_TRUE(bg_hzc);
   EXPECT_TRUE(bs_hzc);
   EXPECT_TRUE(g_hzc);
+  EXPECT_FALSE(foo);
 }

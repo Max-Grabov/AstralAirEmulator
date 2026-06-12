@@ -2,6 +2,7 @@
 
 #include <audio_stream.hpp>
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 namespace AstralAir
@@ -9,6 +10,8 @@ namespace AstralAir
 
 namespace Audio
 {
+
+std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&);
 
 AudioStream DecodeOggContainer(const std::vector<std::byte> &);
 
