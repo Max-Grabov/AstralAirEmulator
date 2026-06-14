@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <iterator>
 #include <optional>
 
 // Ogg Stream decoding adapted from this example here ->
@@ -110,7 +111,8 @@ std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&input_buffer)
   uint32_t data_size{Utility::Get<uint32_t>(input_buffer, 118 + pad_value + 4)}; 
   std::vector<float> pcm(data_size);
 
-  std::move(input_buffer.begin() + 118 + pad_value + 4 + 4, input_buffer.end(), std::back_inserter(input_buffer));
+  std::memcpy(pcm.data(), input_buffer.data() + 118 + pad_value + 4 + 4, input_buffer.size() - 118 - pad_value - 4 - 4);
+
   return AudioStream(std::move(pcm), channels, rate);
 }
 
