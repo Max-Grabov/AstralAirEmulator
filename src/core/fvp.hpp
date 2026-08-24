@@ -2,6 +2,7 @@
 
 #include "formats/save_information.hpp"
 #include "opcode.hpp"
+#include "syscall.hpp"
 #include "util/file/mapped_file.hpp"
 #include <cstdint>
 #include <memory>
@@ -23,6 +24,7 @@ private:
   // This might lead to a bug, saves should start at 0 but my own saves start at 1 hmm
   std::array<Formats::SaveInformation, 999> save_data_array_;
   std::vector<Opcode> opcodes_;
+  std::vector<SyscallEntry> syscall_table_;
   uint32_t hcb_current_file_position_{};
   uint32_t save_preview_width_{};
   uint32_t save_preview_height_{};

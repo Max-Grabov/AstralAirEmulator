@@ -1,4 +1,5 @@
 #include "fvp.hpp"
+#include "syscall.hpp"
 #include "util/encoding/encoding.hpp"
 #include "util/file/mapped_file.hpp"
 
@@ -54,7 +55,6 @@ void FVP::OpenOverallSave()
     // NEW FILE CASE
   }
 
-  // TODO HCB stuff for opcode portion of the copies, also creating the opcode list
   // TODO Windows to SDL config shit for window showing, cursor placement, window size etc.
 }
 
@@ -73,13 +73,11 @@ void FVP::OpenHCBFile()
   // I think
   opcode_count_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
   opcodes_processed_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
-
   opcodes_.reserve(opcode_count_ + opcodes_processed_);
 
-  // I think this is what this byte represents, in the decomp it is read and used to scale the
-  // width, height, etc.
-  uint16_t window_scaling_value{hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_)};
-  uint16_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
 
   std::span<const std::byte> game_title{
       hcb_file_->Get(hcb_current_file_position_, game_title_size)};
@@ -90,13 +88,24 @@ void FVP::OpenHCBFile()
   // Now we have all the sys calls
   uint16_t syscall_count{hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_)};
 
-  // TODO This is not simple
-  while(false)
+  // For now
+  std::vector<SyscallEntry> syscall_table(syscall_count);
+
+  for(uint16_t i{}; i < syscall_count; ++i)
   {
-    if(syscall_count == 0)
-    {
-    }
+    syscall_table[i].argument_count =
+        hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_);
+    syscall_table[i].name_length = hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_);
+
+    const auto name = hcb_file_->Get(hcb_current_file_position_, game_title_size);
+    syscall_table[i].name =
+        std::string_view(reinterpret_cast<const char *>(name.data()), name.size());
   }
+
+  syscall_table_ = std::move(syscall_table);
+
+  // Custom syscall count
+  uint16_t custom_syscall_count{hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_)};
 }
 
 } // namespace Core
