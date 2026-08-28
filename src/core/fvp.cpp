@@ -1,5 +1,5 @@
 #include "fvp.hpp"
-#include "syscall.hpp"
+#include "syscall_entry.hpp"
 #include "util/encoding/encoding.hpp"
 #include "util/file/mapped_file.hpp"
 
@@ -75,7 +75,7 @@ void FVP::OpenHCBFile()
   opcodes_processed_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
   opcodes_.reserve(opcode_count_ + opcodes_processed_);
 
-  uint8_t game_mode{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode_resolution{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
   uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
   uint8_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
 

@@ -29,12 +29,11 @@ void BinFormat::OpenAndRead()
   uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
   uint64_t names_base_position{file_offset + index_size};
 
-  // tspmo
   std::vector<std::byte> total_name_index_buffer =
       file_view_.Read(names_base_position + filename_offset, name_index_size - filename_offset);
 
   uint32_t holder{};
-  for(int i = 0; i < count; ++i)
+  for(uint32_t i = 0; i < count; ++i)
   {
     filename_offset = file_view_.Read<uint32_t>(file_offset);
 
