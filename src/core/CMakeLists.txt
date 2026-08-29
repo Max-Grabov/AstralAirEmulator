@@ -2,6 +2,8 @@ set(CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(USE_SDL3 "Use SDL3 Library" ON)
 
+add_subdirectory(engine)
+
 if(${USE_SDL3})
   set(SDL_X11_XTEST OFF)
   FetchContent_Declare(
@@ -22,5 +24,5 @@ target_include_directories(Core PUBLIC
   ${PROJECT_ROOT}
 )
 
-target_link_libraries(Core PUBLIC FileUtil EncodingUtil Formats Image Audio SDL3::SDL3)
+target_link_libraries(Core PUBLIC Engine FileUtil EncodingUtil Formats Image Audio SDL3::SDL3)
 

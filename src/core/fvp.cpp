@@ -1,5 +1,6 @@
 #include "fvp.hpp"
-#include "syscall_entry.hpp"
+#include "engine/syscall_entry.hpp"
+#include "engine/resolution_table.hpp" 
 #include "util/encoding/encoding.hpp"
 #include "util/file/mapped_file.hpp"
 
@@ -7,6 +8,7 @@
 #include <format>
 #include <memory>
 #include <span>
+#include <stdexcept>
 
 namespace fvp
 {
@@ -30,9 +32,12 @@ void FVP::OpenOverallSave()
         Utility::MappedFile::CreateFile::NO_CREATE_FILE);
 
     uint32_t ptr{};
-    memcpy(opcodes_.data() + opcode_count_, overall_save_file_->Data().data(), opcodes_processed_);
-    ptr += opcodes_processed_ * sizeof(Opcode);
 
+    // Something 8 Bytes, I thought it was Opcode but Im going to hold off on it until I know for sure.
+    // memcpy(opcodes_.data() + opcode_count_, overall_save_file_->Data().data(), opcodes_processed_);
+    //ptr += opcodes_processed_ * sizeof(Opcode);
+
+    ptr += opcodes_processed_ * 8;
     // These things need to get refactored into some SDL Handler later... Atleast some class should
     // exist that can set these values.
     uint8_t foo{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
@@ -70,12 +75,25 @@ void FVP::OpenHCBFile()
   // Some number, idk yet what it represents
   uint32_t foo{hcb_file_->GetAndIncrement<uint32_t>(hcb_current_file_position_)};
 
-  // I think
+  // I need to confirm this, i am less sure.
   opcode_count_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
   opcodes_processed_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
-  opcodes_.reserve(opcode_count_ + opcodes_processed_);
+  // opcodes_.reserve(opcode_count_ + opcodes_processed_);
 
-  uint8_t game_mode_resolution{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode_resolution_key{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+
+  if(game_mode_resolution_key >= 0x10 || game_mode_resolution_key < 0x0)
+  {
+    std::runtime_error("Failed to get game resolution from HCB file, key was outside range. Key value is " + std::to_string(game_mode_resolution_key));
+  }
+
+  else
+  {
+    window_width_  = WIDTH_HEIGHT_LOOKUP_TABLE[game_mode_resolution_key].width; 
+    window_height_ = WIDTH_HEIGHT_LOOKUP_TABLE[game_mode_resolution_key].height;
+  }
+  
+  
   uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
   uint8_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
 
