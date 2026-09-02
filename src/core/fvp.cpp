@@ -1,8 +1,20 @@
 #include "fvp.hpp"
+#include "render_window.hpp"
+#include "audio_playback.hpp"
 #include "engine/syscall_entry.hpp"
 #include "engine/resolution_table.hpp" 
 #include "util/encoding/encoding.hpp"
 #include "util/file/mapped_file.hpp"
+#include "formats/bin.hpp"
+#include "audio/audio_stream.hpp"
+#include "audio/decoder.hpp"
+#include "image/image.hpp"
+#include "image/image_decoder.hpp"
+
+#include "SDL3/SDL_rect.h"
+#include "SDL3/SDL_render.h"
+#include "SDL3/SDL_audio.h"
+#include "SDL3/SDL_init.h"
 
 #include <cstdint>
 #include <format>
@@ -17,10 +29,68 @@ namespace Core
 {
 
 // TODO IMPLEMENT FIND FILE, THIS IS TEMPORARY FOR TESTING!
-FVP::FVP() : save_file_directory_("./AstralAirData"), data_directory_("./AstralAirData") {}
+FVP::FVP() : save_file_directory_("./AstralAirData"), data_directory_("./AstralAirData")
+{
+  InitializeData();
+}
 
-// TODO for now
-FVP FVP::Init() { return FVP(); }
+void FVP::Run()
+{
+  // TODO Obviously all audio needs to be abstracted
+  // Dummy Testing brought from old main.cpp
+  fvp::Formats::BinFormat graph_vis_bin("./AstralAirData/graph_vis.bin");
+  fvp::Formats::BinFormat bgm_bin("./AstralAirData/bgm.bin");
+
+  graph_vis_bin.OpenAndRead();
+  bgm_bin.OpenAndRead();
+
+  fvp::Utility::View graph_vis_view("./AstralAirData/graph_vis.bin");
+  fvp::Utility::View bgm_view("./AstralAirData/bgm.bin");
+
+  std::vector<std::byte> query = bgm_view.Read(728, 3);
+  std::vector<std::byte> image_query =
+      graph_vis_view.Read(8 + graph_vis_view.Read<uint32_t>(0) * 12 + graph_vis_view.Read<uint32_t>(8), 9);
+
+  std::vector<std::byte> image_data = graph_vis_bin.GetChunk(image_query);
+  std::optional<fvp::Image::Image> image = fvp::Image::CreateImage(std::move(image_data));
+  SDL_Texture * image_texture = rendering_window_->CreateTexture(SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC,
+                                                                 image->GetMetaData().width, image->GetMetaData().height);
+
+  // TODO Put in texture RAII Wrapper
+  // (BROUGHT FROM MAIN CPP) Save images are different pixel formats, alpha is just 0xFF, saving this for future reference TODO 
+  //  texture_save = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRX32, SDL_TEXTUREACCESS_STATIC,
+  //                                      save_preview.GetMetaData().width, save_preview.GetMetaData().height);
+  //  SDL_UpdateTexture(texture_save, nullptr,
+  //                    reinterpret_cast<const void *>(save_preview.GetPixels().data()),
+  //                    4 * save_preview.GetMetaData().width);
+
+  SDL_UpdateTexture(image_texture, nullptr,
+                    reinterpret_cast<const void *>(image->GetPixels().data()),
+                    3 * image->GetMetaData().width);
+
+  SDL_Init(SDL_INIT_AUDIO);
+
+  std::optional<fvp::Audio::AudioStream> bgm_data_stream = fvp::Audio::DecodeOggContainer(bgm_bin.GetChunk(query));
+  SDL_AudioStream *bgm_stream = fvp::Core::CreateAudioStream(bgm_data_stream.value());
+  SDL_ResumeAudioStreamDevice(bgm_stream);
+  fvp::Core::PlayAudio(bgm_stream, bgm_data_stream.value());
+
+  SDL_FRect dest_rect{0, 0, static_cast<float>(window_width_), static_cast<float>(window_height_)};
+  rendering_window_->RenderTexture(image_texture, nullptr, &dest_rect);
+  rendering_window_->RendererPresent();
+
+  while(1);
+}
+
+void FVP::InitializeData()
+{
+  OpenOverallSave();
+  OpenHCBFile();
+
+  rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), 
+                                                     window_width_, 
+                                                     window_height_);
+}
 
 void FVP::OpenOverallSave()
 {
@@ -93,14 +163,13 @@ void FVP::OpenHCBFile()
     window_height_ = WIDTH_HEIGHT_LOOKUP_TABLE[game_mode_resolution_key].height;
   }
   
-  
   uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
   uint8_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
 
-  std::span<const std::byte> game_title{
+  std::span<const std::byte> game_title_bytes{
       hcb_file_->Get(hcb_current_file_position_, game_title_size)};
 
-  Utility::ConvertShiftJISToUTF8String(game_title);
+  game_title_ = Utility::ConvertShiftJISToUTF8String(game_title_bytes);
   hcb_current_file_position_ += game_title_size;
 
   // Now we have all the sys calls

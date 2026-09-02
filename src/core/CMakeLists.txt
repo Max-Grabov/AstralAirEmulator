@@ -17,6 +17,7 @@ endif()
 add_library(Core
   ${CORE_SRC}/fvp.cpp
   ${CORE_SRC}/audio_playback.cpp
+  ${CORE_SRC}/render_window.cpp
 )
 
 target_include_directories(Core PUBLIC
