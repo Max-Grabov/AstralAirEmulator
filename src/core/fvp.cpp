@@ -1,4 +1,5 @@
 #include "fvp.hpp"
+#include "SDL3/SDL_events.h"
 #include "render_window.hpp"
 #include "audio_playback.hpp"
 #include "engine/syscall_entry.hpp"
@@ -79,7 +80,19 @@ void FVP::Run()
   rendering_window_->RenderTexture(image_texture, nullptr, &dest_rect);
   rendering_window_->RendererPresent();
 
-  while(1);
+  SDL_Event event{};
+
+  // TESTING
+  while(1)
+  {
+    while(SDL_PollEvent(&event)) 
+    {
+      if(event.type == SDL_EVENT_QUIT)
+      {
+        return;
+      }
+    }
+  }
 }
 
 void FVP::InitializeData()
