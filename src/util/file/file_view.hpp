@@ -1,11 +1,11 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
-#include <functional>
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
@@ -39,9 +39,8 @@ public:
 
   const std::ifstream &GetFileStream() const { return file_data_; }
 
-  template <typename T>
-  [[nodiscard]] T Read(const uint64_t offset,
-                       const std::function<void(std::vector<std::byte> &)> &strategy = nullptr)
+  template <typename T, std::endian E>
+  [[nodiscard]] T Read(const uint64_t offset)
   {
     if(!ValidPath())
     {
@@ -72,21 +71,18 @@ public:
     file_data_.seekg(0, std::ios::beg);
 
     T data{};
-
-    // Apply the user supplied strategy if it is non null
-    if(strategy == nullptr)
-    {
-      std::memcpy(&data, buffer.data(), sizeof(T));
-      return data;
-    }
-    strategy(buffer);
     std::memcpy(&data, buffer.data(), sizeof(T));
+    
+    if constexpr(std::endian::native == E)
+    {
+      std::reverse(reinterpret_cast<std::byte *>(&data),
+                   reinterpret_cast<std::byte *>(&data) + sizeof(T));
+    }
     return data;
   }
 
   [[nodiscard]] std::vector<std::byte>
-  Read(const uint64_t offset, const uint64_t size,
-       const std::function<void(std::vector<std::byte> &)> &strategy = nullptr)
+  Read(const uint64_t offset, const uint64_t size)
   {
     if(!ValidPath())
     {
@@ -112,10 +108,6 @@ public:
     file_data_.read(reinterpret_cast<char *>(buffer.data()), size);
     file_data_.seekg(0, std::ios::beg);
 
-    // RVO
-    if(strategy == nullptr)
-      return buffer;
-    strategy(buffer);
     return buffer;
   }
 

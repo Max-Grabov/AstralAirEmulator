@@ -37,7 +37,8 @@ TEST(FileViewTest, FileReadUInt8)
   EXPECT_TRUE(view.ValidPath());
   for(uint8_t it{0}; it < 8; ++it)
   {
-    EXPECT_EQ(view.Read<uint8_t>(it), test_array[it]);
+    auto value = view.Read<uint8_t, std::endian::little>(it);
+    EXPECT_EQ(value, test_array[it]);
   }
 }
 
@@ -52,8 +53,8 @@ TEST(FileViewTest, FileReadUInt32)
   EXPECT_TRUE(view.ValidPath());
   for(uint32_t it{0}; it < 8; ++it)
   {
-    fvp::Utility::ConvertToEndian<std::endian::little>(test_array[it]);
-    EXPECT_EQ(view.Read<uint32_t>(it * sizeof(uint32_t)), test_array[it]);
+    auto value = view.Read<uint32_t, std::endian::little>(it * sizeof(uint32_t));
+    EXPECT_EQ(value, test_array[it]);
   }
 }
 
@@ -68,7 +69,8 @@ TEST(FileViewTest, FileReadUInt64)
 
   for(uint64_t it{0}; it < 8; ++it)
   {
-    EXPECT_EQ(view.Read<uint64_t>(it * sizeof(uint64_t)), test_array[it]);
+    auto value = view.Read<uint64_t, std::endian::big>(it * sizeof(uint64_t));
+    EXPECT_EQ(value, test_array[it]);
   }
 }
 

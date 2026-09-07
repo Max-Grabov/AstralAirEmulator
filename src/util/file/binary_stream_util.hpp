@@ -12,9 +12,6 @@
 template <typename T>
 concept Gettable = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
 
-template <typename T>
-concept EndianSwappable = std::is_integral_v<T> || std::is_floating_point_v<T>;
-
 namespace fvp
 {
 
@@ -22,7 +19,8 @@ namespace Utility
 {
 
 // Returns a value that is memcopied from the span's pointed memory at the offset specified.
-template <Gettable T> [[nodiscard]] T Get(const std::span<const std::byte> &stream, size_t offset)
+// Endian template parameter passed to grab with the specified endianness 
+template <Gettable T, std::endian E> [[nodiscard]] T Get(const std::span<const std::byte> &stream, size_t offset)
 {
   if(!stream.data())
   {
@@ -42,6 +40,13 @@ template <Gettable T> [[nodiscard]] T Get(const std::span<const std::byte> &stre
   T data{};
 
   std::memcpy(&data, stream.data() + offset, sizeof(T));
+
+  if constexpr(std::endian::native == E)
+  {
+    std::reverse(reinterpret_cast<std::byte *>(&data),
+                 reinterpret_cast<std::byte *>(&data) + sizeof(T));
+  }
+
   return data;
 }
 
@@ -86,26 +91,6 @@ template <Gettable T> void Write(std::span<std::byte> stream, size_t offset, con
   }
 
   std::memcpy(stream.data() + offset, &value, sizeof(T));
-}
-
-template <std::endian E> void ConvertToEndian(std::span<std::byte> &stream)
-{
-  if constexpr(std::endian::native == E)
-    return;
-  std::reverse(stream.begin(), stream.end());
-}
-
-template <std::endian E, EndianSwappable T> void ConvertToEndian(T &value)
-{
-  std::reverse(reinterpret_cast<std::byte *>(&value),
-               reinterpret_cast<std::byte *>(&value) + sizeof(T));
-}
-
-template <std::endian E, EndianSwappable T> [[nodiscard]] T ConvertToEndian(T &&value)
-{
-  std::reverse(reinterpret_cast<std::byte *>(&value),
-               reinterpret_cast<std::byte *>(&value) + sizeof(T));
-  return value;
 }
 
 inline void PrintAsString(const std::span<const std::byte> &stream)

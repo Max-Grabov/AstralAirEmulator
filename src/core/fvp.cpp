@@ -50,7 +50,7 @@ void FVP::Run()
 
   std::vector<std::byte> query = bgm_view.Read(728, 3);
   std::vector<std::byte> image_query =
-      graph_vis_view.Read(8 + graph_vis_view.Read<uint32_t>(0) * 12 + graph_vis_view.Read<uint32_t>(8), 9);
+      graph_vis_view.Read(8 + graph_vis_view.Read<uint32_t, std::endian::big>(0) * 12 + graph_vis_view.Read<uint32_t, std::endian::big>(8), 9);
 
   std::vector<std::byte> image_data = graph_vis_bin.GetChunk(image_query);
   std::optional<fvp::Image::Image> image = fvp::Image::CreateImage(std::move(image_data));
@@ -121,15 +121,15 @@ void FVP::OpenOverallSave()
     //ptr += opcodes_processed_ * sizeof(Opcode);
 
     ptr += opcodes_processed_ * 8;
-    uint8_t graphic_mode_maybe{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
-    bool visible{static_cast<bool>(overall_save_file_->GetAndIncrement<uint8_t>(ptr))};
+    uint8_t graphic_mode_maybe{overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr)};
+    bool visible{static_cast<bool>(overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr))};
 
-    uint32_t left_position{overall_save_file_->GetAndIncrement<uint32_t>(ptr)};
-    uint32_t top_position{overall_save_file_->GetAndIncrement<uint32_t>(ptr)};
+    uint32_t left_position{overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr)};
+    uint32_t top_position{overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr)};
 
     // TODO Handle 2nd window stuff and right position + bottom
     
-    uint8_t cursor_choice{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
+    uint8_t cursor_choice{overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr)};
 
     // Set our cursor
     if(cursor_choice < 4)
@@ -148,11 +148,11 @@ void FVP::OpenOverallSave()
       cursor_choice_ = cursor_choice;
     }
 
-    uint8_t field_0x81{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
+    uint8_t field_0x81{overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr)};
 
     // Save preview image dimensions!!!
-    preview_save_image_width_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
-    preview_save_image_height_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
+    preview_save_image_width_ = overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr);
+    preview_save_image_height_ = overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr);
 
     // some 0x100000 length field, it SHOULD be guarranteed to be 0x100000
     constexpr uint32_t unknown_field_0xfdc_length{0x100000};
@@ -165,13 +165,13 @@ void FVP::OpenOverallSave()
     std::vector<uint32_t> unknown_field_0x6a48c0(unknown_field_0x6a48c0_length);
     for(uint32_t i{}; i < unknown_field_0x6a48c0_length; ++i)
     {
-      unknown_field_0x6a48c0[i] = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
+      unknown_field_0x6a48c0[i] = overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr);
     }
 
     // Now we have the font selection in the save file
-    font_choice_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr); 
+    font_choice_ = overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr); 
     
-    uint16_t font_size{overall_save_file_->GetAndIncrement<uint16_t>(ptr)};
+    uint16_t font_size{overall_save_file_->GetAndIncrement<std::endian::big, uint16_t>(ptr)};
     if(font_size == 0)
     {
       if(!font_name_.data())
@@ -203,17 +203,17 @@ void FVP::OpenHCBFile()
       Utility::MappedFile::Permissions::READ, Utility::MappedFile::CreateFile::NO_CREATE_FILE);
 
   // Syscall stuff, this is where they start
-  hcb_current_file_position_ = hcb_file_->Get<uint32_t>(hcb_current_file_position_);
+  hcb_current_file_position_ = hcb_file_->Get<std::endian::big, uint32_t>(hcb_current_file_position_);
 
   // Some number, idk yet what it represents
-  uint32_t foo{hcb_file_->GetAndIncrement<uint32_t>(hcb_current_file_position_)};
+  uint32_t foo{hcb_file_->GetAndIncrement<std::endian::big, uint32_t>(hcb_current_file_position_)};
 
   // I need to confirm this, i am less sure.
-  opcode_count_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
-  opcodes_processed_ = hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_);
+  opcode_count_ = hcb_file_->GetAndIncrement<std::endian::big, uint16_t>(hcb_current_file_position_);
+  opcodes_processed_ = hcb_file_->GetAndIncrement<std::endian::big, uint16_t>(hcb_current_file_position_);
   // opcodes_.reserve(opcode_count_ + opcodes_processed_);
 
-  uint8_t game_mode_resolution_key{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode_resolution_key{hcb_file_->GetAndIncrement<std::endian::big, uint8_t>(hcb_current_file_position_)};
 
   if(game_mode_resolution_key >= 0x10 || game_mode_resolution_key < 0x0)
   {
@@ -226,8 +226,8 @@ void FVP::OpenHCBFile()
     window_height_ = WIDTH_HEIGHT_LOOKUP_TABLE[game_mode_resolution_key].height;
   }
   
-  uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
-  uint8_t game_title_size{hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_)};
+  uint8_t game_mode_reserved{hcb_file_->GetAndIncrement<std::endian::big, uint8_t>(hcb_current_file_position_)};
+  uint8_t game_title_size{hcb_file_->GetAndIncrement<std::endian::big, uint8_t>(hcb_current_file_position_)};
 
   std::span<const std::byte> game_title_bytes{
       hcb_file_->Get(hcb_current_file_position_, game_title_size)};
@@ -236,7 +236,7 @@ void FVP::OpenHCBFile()
   hcb_current_file_position_ += game_title_size;
 
   // Now we have all the sys calls
-  uint16_t syscall_count{hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_)};
+  uint16_t syscall_count{hcb_file_->GetAndIncrement<std::endian::big, uint16_t>(hcb_current_file_position_)};
 
   // For now
   std::vector<SyscallEntry> syscall_table(syscall_count);
@@ -244,8 +244,8 @@ void FVP::OpenHCBFile()
   for(uint16_t i{}; i < syscall_count; ++i)
   {
     syscall_table[i].argument_count =
-        hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_);
-    syscall_table[i].name_length = hcb_file_->GetAndIncrement<uint8_t>(hcb_current_file_position_);
+        hcb_file_->GetAndIncrement<std::endian::big, uint8_t>(hcb_current_file_position_);
+    syscall_table[i].name_length = hcb_file_->GetAndIncrement<std::endian::big, uint8_t>(hcb_current_file_position_);
 
     const auto name = hcb_file_->Get(hcb_current_file_position_, game_title_size);
     syscall_table[i].name =
@@ -255,7 +255,7 @@ void FVP::OpenHCBFile()
   syscall_table_ = std::move(syscall_table);
 
   // Custom syscall count
-  uint16_t custom_syscall_count{hcb_file_->GetAndIncrement<uint16_t>(hcb_current_file_position_)};
+  uint16_t custom_syscall_count{hcb_file_->GetAndIncrement<std::endian::big, uint16_t>(hcb_current_file_position_)};
 }
 
 } // namespace Core

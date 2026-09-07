@@ -35,79 +35,68 @@ std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&input_buffer)
     return std::nullopt;
   }
 
-  uint32_t id{
-      Utility::ConvertToEndian<std::endian::little>(Utility::Get<uint32_t>(input_buffer, 0))};
-  if(id != 0x52494646)
+  if(uint32_t id{Utility::Get<uint32_t, std::endian::little>(input_buffer, 0)}; id != 0x52494646)
   {
     return std::nullopt;
   }
 
-  uint32_t size{Utility::Get<uint32_t>(input_buffer, 4)};
+  uint32_t size{Utility::Get<uint32_t, std::endian::big>(input_buffer, 4)};
   if(size + 8 != input_buffer.size())
   {
     return std::nullopt;
   }
 
-  uint32_t format{
-      Utility::ConvertToEndian<std::endian::little>(Utility::Get<uint32_t>(input_buffer, 8))};
-  if(format != 0x57415645)
+  if(uint32_t format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 8)}; format != 0x57415645)
   {
     return std::nullopt;
   }
 
   // fmt sub chunk
-  uint32_t fmt_format{
-      Utility::ConvertToEndian<std::endian::little>(Utility::Get<uint32_t>(input_buffer, 12))};
-  if(fmt_format != 0x666d7420)
+  if(uint32_t fmt_format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 12)}; fmt_format != 0x666d7420)
   {
     return std::nullopt;
   }
 
-  uint32_t fmt_chunk_size{Utility::Get<uint32_t>(input_buffer, 16)};
-  if(fmt_chunk_size != 0x00000010)
+  
+  if(uint32_t fmt_chunk_size{Utility::Get<uint32_t, std::endian::big>(input_buffer, 16)}; fmt_chunk_size != 0x00000010)
   {
     return std::nullopt;
   }
 
-  uint16_t channels{Utility::Get<uint16_t>(input_buffer, 22)};
-  uint16_t rate{Utility::Get<uint16_t>(input_buffer, 24)};
-  uint16_t bits_per_sample{Utility::Get<uint16_t>(input_buffer, 34)};
-  uint32_t byte_rate{Utility::Get<uint32_t>(input_buffer, 28)};
+  uint16_t channels{Utility::Get<uint16_t, std::endian::big>(input_buffer, 22)};
+  uint16_t rate{Utility::Get<uint16_t, std::endian::big>(input_buffer, 24)};
+  uint16_t bits_per_sample{Utility::Get<uint16_t, std::endian::big>(input_buffer, 34)};
+  uint32_t byte_rate{Utility::Get<uint32_t, std::endian::big>(input_buffer, 28)};
   if(byte_rate != rate * channels * bits_per_sample / 8)
   {
     return std::nullopt;
   }
 
-  uint16_t block_align{Utility::Get<uint16_t>(input_buffer, 32)};
+  uint16_t block_align{Utility::Get<uint16_t, std::endian::big>(input_buffer, 32)};
   if(block_align != channels * bits_per_sample / 8)
   {
     return std::nullopt;
   }
 
   // data sub chunk
-  uint32_t data_id{
-      Utility::ConvertToEndian<std::endian::little>(Utility::Get<uint32_t>(input_buffer, 36))};
-  if(data_id != 0x4C495354)
+  if(uint32_t data_id{Utility::Get<uint32_t, std::endian::little>(input_buffer, 36)}; data_id != 0x4C495354)
   {
     return std::nullopt;
   }
 
-  uint32_t pad_string{
-      Utility::ConvertToEndian<std::endian::little>(Utility::Get<uint32_t>(input_buffer, 110))};
-  if(pad_string != 0x50414420)
+  if(uint32_t pad_string{Utility::Get<uint32_t, std::endian::little>(input_buffer, 110)}; pad_string != 0x50414420)
   {
     return std::nullopt;
   }
 
-  uint32_t pad_value{Utility::Get<uint32_t>(input_buffer, 114)};
-  uint32_t data_string{Utility::ConvertToEndian<std::endian::little>(
-      Utility::Get<uint32_t>(input_buffer, 118 + pad_value))};
-  if(data_string != 0x64617461)
+  uint32_t pad_value{Utility::Get<uint32_t, std::endian::big>(input_buffer, 114)};
+  
+  if(uint32_t data_string{Utility::Get<uint32_t, std::endian::little>(input_buffer, 118 + pad_value)}; data_string != 0x64617461)
   {
     return std::nullopt;
   }
 
-  uint32_t data_size{Utility::Get<uint32_t>(input_buffer, 118 + pad_value + 4)};
+  uint32_t data_size{Utility::Get<uint32_t, std::endian::big>(input_buffer, 118 + pad_value + 4)};
   if(data_size % sizeof(float) != 0)
   {
     return std::nullopt;

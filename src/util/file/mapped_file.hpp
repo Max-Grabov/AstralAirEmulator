@@ -87,12 +87,12 @@ public:
 
   // Should be a size_t parameter, but not sure if I will need to use integers, shorts etc. This way
   // atleast it allows those types and allows for checks to ensure no negative values
-  template <Gettable T, typename P> [[nodiscard]] inline T Get(P offset) const
+  template <std::endian E, Gettable T, typename P> [[nodiscard]] inline T Get(P offset) const
   {
     static_assert(std::is_integral_v<P>);
     if(offset < 0)
       return {};
-    return Utility::Get<T>(data_, offset);
+    return Utility::Get<T, E>(data_, offset);
   }
 
   template <typename P> [[nodiscard]] inline ConstBinaryStream Get(P offset, size_t size) const
@@ -103,10 +103,10 @@ public:
     return Utility::Get(data_, offset, size);
   }
 
-  template <Gettable T, typename P> [[nodiscard]] inline T GetAndIncrement(P &offset) const
+  template <std::endian E, Gettable T, typename P> [[nodiscard]] inline T GetAndIncrement(P &offset) const
   {
     static_assert(std::is_integral_v<P>);
-    T value{Get<T>(offset)};
+    T value{Get<E, T>(offset)};
     offset += sizeof(T);
     return value;
   }

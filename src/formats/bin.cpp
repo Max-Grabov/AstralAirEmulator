@@ -22,11 +22,11 @@ size_t BinFormat::CollectionSize() const { return data_collection_.size(); }
 
 void BinFormat::OpenAndRead()
 {
-  uint32_t count{file_view_.Read<uint32_t>(0)};
+  uint32_t count{file_view_.Read<uint32_t, std::endian::big>(0)};
   uint32_t index_size{count * 12};
-  uint32_t name_index_size{file_view_.Read<uint32_t>(4)};
+  uint32_t name_index_size{file_view_.Read<uint32_t, std::endian::big>(4)};
   uint32_t file_offset{8};
-  uint32_t filename_offset{file_view_.Read<uint32_t>(file_offset)};
+  uint32_t filename_offset{file_view_.Read<uint32_t, std::endian::big>(file_offset)};
   uint64_t names_base_position{file_offset + index_size};
 
   std::vector<std::byte> total_name_index_buffer =
@@ -35,7 +35,7 @@ void BinFormat::OpenAndRead()
   uint32_t holder{};
   for(uint32_t i = 0; i < count; ++i)
   {
-    filename_offset = file_view_.Read<uint32_t>(file_offset);
+    filename_offset = file_view_.Read<uint32_t, std::endian::big>(file_offset);
 
     if(filename_offset >= name_index_size)
       throw std::runtime_error("Offset bigger than name index");
@@ -59,8 +59,8 @@ void BinFormat::OpenAndRead()
     std::copy(total_name_index_buffer.begin() + beginning,
               total_name_index_buffer.begin() + holder - 1, name_buffer.begin());
 
-    Entry entry{file_view_.Read<uint32_t>(file_offset + 4),
-                file_view_.Read<uint32_t>(file_offset + 8)};
+    Entry entry{file_view_.Read<uint32_t, std::endian::big>(file_offset + 4),
+                file_view_.Read<uint32_t, std::endian::big>(file_offset + 8)};
     data_collection_.emplace(std::move(name_buffer), std::move(entry));
     file_offset += 12;
   }

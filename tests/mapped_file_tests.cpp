@@ -10,7 +10,8 @@ TEST(FileTest, TestRead)
 {
   auto file = MappedFile("./AstralAirData/Snow.hcb", MappedFile::Permissions::READ,
                          MappedFile::CreateFile::NO_CREATE_FILE);
-  EXPECT_EQ(file.Get<uint32_t>(0), 0x0058d8b4);
+  auto value = file.Get<std::endian::big, uint32_t>(0);
+  EXPECT_EQ(value, 0x0058d8b4);
 }
 
 TEST(FileTest, TestInvalidWrite)
@@ -33,5 +34,6 @@ TEST(FileTest, TestWrite)
   auto file = MappedFile("./AstralAirData/test.bin", MappedFile::Permissions::READ_WRITE,
                          MappedFile::CreateFile::NO_CREATE_FILE);
   file.Write(10, 0x61);
-  EXPECT_EQ(file.Get<uint8_t>(10), 0x61);
+  auto value = file.Get<std::endian::big, uint8_t>(10);
+  EXPECT_EQ(value, 0x61);
 }

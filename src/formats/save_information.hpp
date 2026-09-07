@@ -35,16 +35,16 @@ inline SaveInformation GetSaveInformation(const std::string &path)
   SaveInformation save_info;
   uint32_t ptr{0};
 
-  save_info.year = save.Read<uint16_t>(ptr);
+  save_info.year = save.Read<uint16_t, std::endian::little>(ptr);
   ptr += 2;
-  save_info.month = save.Read<uint8_t>(ptr++);
-  save_info.day = save.Read<uint8_t>(ptr++);
-  save_info.day_of_week = save.Read<uint8_t>(ptr++);
-  save_info.hour = save.Read<uint8_t>(ptr++);
-  save_info.minute = save.Read<uint8_t>(ptr++);
+  save_info.month = save.Read<uint8_t, std::endian::little>(ptr++);
+  save_info.day = save.Read<uint8_t, std::endian::little>(ptr++);
+  save_info.day_of_week = save.Read<uint8_t, std::endian::little>(ptr++);
+  save_info.hour = save.Read<uint8_t, std::endian::little>(ptr++);
+  save_info.minute = save.Read<uint8_t, std::endian::little>(ptr++);
 
   uint16_t size{};
-  size = save.Read<uint16_t>(ptr);
+  size = save.Read<uint16_t, std::endian::little>(ptr);
   ptr += 2;
   if(size != 0)
   {
@@ -53,7 +53,7 @@ inline SaveInformation GetSaveInformation(const std::string &path)
     ptr += size;
   }
 
-  size = save.Read<uint16_t>(ptr);
+  size = save.Read<uint16_t, std::endian::little>(ptr);
   ptr += 2;
   if(size != 0)
   {
@@ -62,7 +62,7 @@ inline SaveInformation GetSaveInformation(const std::string &path)
     ptr += size;
   }
 
-  size = save.Read<uint16_t>(ptr);
+  size = save.Read<uint16_t, std::endian::little>(ptr);
   ptr += 2;
   if(size != 0)
   {
@@ -81,9 +81,9 @@ inline Image::Image GetSavePreviewImage(const std::string &path, uint32_t width,
   // We read size data until the image data
   // This goes through all the save metadata
   uint32_t ptr{7};
-  ptr += (save.Read<uint16_t>(ptr) + 2);
-  ptr += (save.Read<uint16_t>(ptr) + 2);
-  ptr += (save.Read<uint16_t>(ptr) + 2);
+  ptr += (save.Read<uint16_t, std::endian::little>(ptr) + 2);
+  ptr += (save.Read<uint16_t, std::endian::little>(ptr) + 2);
+  ptr += (save.Read<uint16_t, std::endian::little>(ptr) + 2);
 
   // Image is raw bytes, so we can just fread and create
   auto pixels = save.Read(ptr, width * height * 4);
