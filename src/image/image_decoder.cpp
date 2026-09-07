@@ -55,7 +55,6 @@ std::optional<Image> CreateImage(std::vector<std::byte> &&stream)
 
   std::vector<std::byte> pixels(unpacked_size);
 
-  // LOL
   z_stream->read(reinterpret_cast<char *>(pixels.data()), unpacked_size);
   return Image({type, width, height, offset_x, offset_y, bpp, unpacked_size, header_size},
                std::move(pixels));
