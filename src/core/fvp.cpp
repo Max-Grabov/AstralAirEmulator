@@ -108,21 +108,71 @@ void FVP::OpenOverallSave()
     //ptr += opcodes_processed_ * sizeof(Opcode);
 
     ptr += opcodes_processed_ * 8;
-    // These things need to get refactored into some SDL Handler later... Atleast some class should
-    // exist that can set these values.
-    uint8_t foo{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
+    uint8_t graphic_mode_maybe{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
     bool visible{static_cast<bool>(overall_save_file_->GetAndIncrement<uint8_t>(ptr))};
 
     uint32_t left_position{overall_save_file_->GetAndIncrement<uint32_t>(ptr)};
     uint32_t top_position{overall_save_file_->GetAndIncrement<uint32_t>(ptr)};
 
     // TODO Handle 2nd window stuff and right position + bottom
-    uint8_t some_2nd_window_byte{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
+    
+    uint8_t cursor_choice{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
+
+    // Set our cursor
+    if(cursor_choice < 4)
+    {
+      // Some field must not be false TODO 
+      if(!false)
+      {
+        // SDL Cursor selection from the cursor array
+        // then if another field is not false, set the cursor TODO
+        if(!false)
+        {
+          // Set cursor
+        }
+      }   
+
+      cursor_choice_ = cursor_choice;
+    }
+
     uint8_t field_0x81{overall_save_file_->GetAndIncrement<uint8_t>(ptr)};
 
     // Save preview image dimensions!!!
     preview_save_image_width_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
     preview_save_image_height_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
+
+    // some 0x100000 length field, it SHOULD be guarranteed to be 0x100000
+    constexpr uint32_t unknown_field_0xfdc_length{0x100000};
+    std::vector<std::byte> unknown_field_0xfdc(unknown_field_0xfdc_length);
+    memcpy(unknown_field_0xfdc.data(), overall_save_file_->Get(ptr, unknown_field_0xfdc_length).data(), unknown_field_0xfdc_length);
+    ptr += unknown_field_0xfdc_length;
+    // Some other array 0x40 elements of size 4 bytes
+
+    constexpr uint32_t unknown_field_0x6a48c0_length{0x40};
+    std::vector<uint32_t> unknown_field_0x6a48c0(unknown_field_0x6a48c0_length);
+    for(uint32_t i{}; i < unknown_field_0x6a48c0_length; ++i)
+    {
+      unknown_field_0x6a48c0[i] = overall_save_file_->GetAndIncrement<uint32_t>(ptr);
+    }
+
+    // Now we have the font selection in the save file
+    font_choice_ = overall_save_file_->GetAndIncrement<uint32_t>(ptr); 
+    
+    uint16_t font_size{overall_save_file_->GetAndIncrement<uint16_t>(ptr)};
+    if(font_size == 0)
+    {
+      if(!font_name_.data())
+      {
+        font_name_ = {}; 
+      }
+    }
+
+    else
+    {
+      std::span<const std::byte> font_name_bytes = overall_save_file_->Get(ptr, font_size);
+      font_name_ = Utility::ConvertShiftJISToUTF8String(font_name_bytes);
+      ptr += font_size;
+    }
   }
 
   catch(Utility::MappedFile::create_file_exception &e)
