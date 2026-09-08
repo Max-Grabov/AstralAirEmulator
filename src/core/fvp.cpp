@@ -1,5 +1,5 @@
 #include "fvp.hpp"
-#include "SDL3/SDL_events.h"
+
 #include "render_window.hpp"
 #include "audio_playback.hpp"
 #include "engine/syscall_entry.hpp"
@@ -16,6 +16,7 @@
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_audio.h"
 #include "SDL3/SDL_init.h"
+#include "SDL3/SDL_events.h"
 
 #include <cstdint>
 #include <format>
@@ -99,10 +100,7 @@ void FVP::InitializeData()
 {
   OpenOverallSave();
   OpenHCBFile();
-
-  rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), 
-                                                     window_width_, 
-                                                     window_height_);
+  OpenWindowAndCursor(); 
 }
 
 void FVP::OpenOverallSave()
@@ -141,7 +139,11 @@ void FVP::OpenOverallSave()
         // then if another field is not false, set the cursor TODO
         if(!false)
         {
-          // Set cursor
+          // TODO move this
+          Utility::MappedFile cursor_1(std::vformat("{}/cursor1.ani", std::make_format_args(data_directory_)), Utility::MappedFile::Permissions::READ, Utility::MappedFile::CreateFile::NO_CREATE_FILE);
+          auto cursor_1_data = cursor_1.Get(0, cursor_1.Data().size());
+
+          cursor_ = std::make_unique<Cursor>(cursor_1_data);
         }
       }   
 
@@ -256,6 +258,12 @@ void FVP::OpenHCBFile()
 
   // Custom syscall count
   uint16_t custom_syscall_count{hcb_file_->GetAndIncrement<std::endian::big, uint16_t>(hcb_current_file_position_)};
+}
+
+void FVP::OpenWindowAndCursor()
+{
+  rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), window_width_, window_height_);
+  cursor_->SetCursor(); 
 }
 
 } // namespace Core

@@ -4,6 +4,7 @@
 #include "engine/syscall_entry.hpp"
 #include "util/file/mapped_file.hpp"
 #include "render_window.hpp"
+#include "cursor.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -26,6 +27,7 @@ private:
   std::unique_ptr<Utility::MappedFile> overall_save_file_{nullptr};
   std::unique_ptr<Utility::MappedFile> hcb_file_{nullptr};;
   std::unique_ptr<RenderWindow> rendering_window_{nullptr};
+  std::unique_ptr<Cursor> cursor_{nullptr};
   std::array<Formats::SaveInformation, 999> save_data_array_;
   std::vector<SyscallEntry> syscall_table_;
   std::vector<std::byte> game_title_;
@@ -46,6 +48,7 @@ private:
   void OpenHCBFile();
   void GetSaveInformation(uint32_t save_number);
   void InitializeData(); 
+  void OpenWindowAndCursor();
 
 public:
   FVP();

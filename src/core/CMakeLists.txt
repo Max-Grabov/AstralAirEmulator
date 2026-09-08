@@ -11,13 +11,19 @@ if(${USE_SDL3})
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-3.4.8
   )
-  FetchContent_MakeAvailable(sdl3)
+  FetchContent_Declare(
+    sdl3-image
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+    GIT_TAG release-3.4.6
+  )
+  FetchContent_MakeAvailable(sdl3 sdl3-image)
 endif()
 
 add_library(Core
   ${CORE_SRC}/fvp.cpp
   ${CORE_SRC}/audio_playback.cpp
   ${CORE_SRC}/render_window.cpp
+  ${CORE_SRC}/cursor.cpp 
 )
 
 target_include_directories(Core PUBLIC
@@ -25,5 +31,5 @@ target_include_directories(Core PUBLIC
   ${PROJECT_ROOT}
 )
 
-target_link_libraries(Core PUBLIC Engine FileUtil EncodingUtil Formats Image Audio SDL3::SDL3)
+target_link_libraries(Core PUBLIC Engine FileUtil EncodingUtil Formats Image Audio SDL3::SDL3 SDL3_image::SDL3_image)
 
