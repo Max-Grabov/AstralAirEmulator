@@ -106,23 +106,22 @@ void FVP::InitializeData()
   }
 
   // TODO move this into probably the same area as other asset setup
-  Utility::MappedFile cursor_1(std::vformat("{}/cursor1.ani", std::make_format_args(data_directory_)), 
-                               Utility::MappedFile::Permissions::READ, 
-                               Utility::MappedFile::CreateFile::NO_CREATE_FILE);
-          
-  Utility::MappedFile cursor_2(std::vformat("{}/cursor2.ani", std::make_format_args(data_directory_)), 
-                               Utility::MappedFile::Permissions::READ, 
-                               Utility::MappedFile::CreateFile::NO_CREATE_FILE);
-
-  auto cursor_1_data = cursor_1.Get(0, cursor_1.Data().size());
-  auto cursor_2_data = cursor_2.Get(0, cursor_2.Data().size());
-
-  // Create File and then if NULL just set nullptr in ctor TODO
-  cursors_[0] = nullptr;
-  cursors_[1] = std::make_unique<Cursor>(cursor_1_data);
-  cursors_[2] = std::make_unique<Cursor>(cursor_2_data);
-  cursors_[3] = nullptr; 
-
+  for(size_t cursor_num{1}; cursor_num < cursors_.size(); ++cursor_num)
+  {
+    try
+    {
+      Utility::MappedFile cursor(std::vformat("{}/cursor{}.ani", std::make_format_args(data_directory_, cursor_num)), 
+                                 Utility::MappedFile::Permissions::READ, 
+                                 Utility::MappedFile::CreateFile::NO_CREATE_FILE);
+      auto cursor_data = cursor.Get(0, cursor.Data().size());
+      cursors_[cursor_num] = std::make_unique<Cursor>(cursor_data);
+    }
+    catch(Utility::MappedFile::create_file_exception &e)
+    {
+      cursors_[cursor_num] = nullptr;
+    }
+  }
+   
   OpenHCBFile();
   OpenOverallSave();
   OpenWindowAndCursor(); 
@@ -285,7 +284,11 @@ void FVP::OpenHCBFile()
 void FVP::OpenWindowAndCursor()
 {
   rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), window_width_, window_height_);
-  current_cursor_->SetCursor(); 
+
+  if(current_cursor_ != nullptr)
+  {
+    current_cursor_->SetCursor();
+  }
 }
 
 } // namespace Core
