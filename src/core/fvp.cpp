@@ -1,5 +1,6 @@
 #include "fvp.hpp"
 
+#include "SDL3/SDL_mouse.h"
 #include "render_window.hpp"
 #include "audio_playback.hpp"
 #include "engine/syscall_entry.hpp"
@@ -32,7 +33,7 @@ namespace Core
 
 // TODO IMPLEMENT FIND FILE, THIS IS TEMPORARY FOR TESTING!
 FVP::FVP() : save_file_directory_("./AstralAirData"), data_directory_("./AstralAirData")
-{
+{ 
   InitializeData();
 }
 
@@ -80,6 +81,7 @@ void FVP::Run()
   SDL_FRect dest_rect{0, 0, static_cast<float>(window_width_), static_cast<float>(window_height_)};
   rendering_window_->RenderTexture(image_texture, nullptr, &dest_rect);
   rendering_window_->RendererPresent();
+  SDL_ShowCursor();
 
   SDL_Event event{};
 
@@ -98,13 +100,36 @@ void FVP::Run()
 
 void FVP::InitializeData()
 {
-  OpenOverallSave();
+  if (!SDL_Init(SDL_INIT_VIDEO))
+  {
+    throw std::runtime_error(SDL_GetError());
+  }
+
+  // TODO move this into probably the same area as other asset setup
+  Utility::MappedFile cursor_1(std::vformat("{}/cursor1.ani", std::make_format_args(data_directory_)), 
+                               Utility::MappedFile::Permissions::READ, 
+                               Utility::MappedFile::CreateFile::NO_CREATE_FILE);
+          
+  Utility::MappedFile cursor_2(std::vformat("{}/cursor2.ani", std::make_format_args(data_directory_)), 
+                               Utility::MappedFile::Permissions::READ, 
+                               Utility::MappedFile::CreateFile::NO_CREATE_FILE);
+
+  auto cursor_1_data = cursor_1.Get(0, cursor_1.Data().size());
+  auto cursor_2_data = cursor_2.Get(0, cursor_2.Data().size());
+
+  // Create File and then if NULL just set nullptr in ctor TODO
+  cursors_[0] = nullptr;
+  cursors_[1] = std::make_unique<Cursor>(cursor_1_data);
+  cursors_[2] = std::make_unique<Cursor>(cursor_2_data);
+  cursors_[3] = nullptr; 
+
   OpenHCBFile();
+  OpenOverallSave();
   OpenWindowAndCursor(); 
 }
 
 void FVP::OpenOverallSave()
-{
+{ 
   try
   {
     overall_save_file_ = std::make_unique<Utility::MappedFile>(
@@ -135,15 +160,12 @@ void FVP::OpenOverallSave()
       // Some field must not be false TODO 
       if(!false)
       {
+        
         // SDL Cursor selection from the cursor array
         // then if another field is not false, set the cursor TODO
         if(!false)
-        {
-          // TODO move this
-          Utility::MappedFile cursor_1(std::vformat("{}/cursor1.ani", std::make_format_args(data_directory_)), Utility::MappedFile::Permissions::READ, Utility::MappedFile::CreateFile::NO_CREATE_FILE);
-          auto cursor_1_data = cursor_1.Get(0, cursor_1.Data().size());
-
-          cursor_ = std::make_unique<Cursor>(cursor_1_data);
+        { 
+          current_cursor_ = cursors_[cursor_choice].get();
         }
       }   
 
@@ -263,7 +285,7 @@ void FVP::OpenHCBFile()
 void FVP::OpenWindowAndCursor()
 {
   rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), window_width_, window_height_);
-  cursor_->SetCursor(); 
+  current_cursor_->SetCursor(); 
 }
 
 } // namespace Core

@@ -30,6 +30,11 @@ Cursor::Cursor(const std::span<const std::byte> ani_data, int click_x, int click
   }
 
   cursor_ = IMG_CreateAnimatedCursor(animation, click_x, click_y); 
+  if(!cursor_)
+  {
+    throw std::runtime_error("No cursor");
+  }
+
   IMG_FreeAnimation(animation);
 }
 
@@ -40,7 +45,10 @@ Cursor::~Cursor()
 
 void Cursor::SetCursor() const
 {
-  SDL_SetCursor(cursor_);
+  // TODO something
+  if(!SDL_SetCursor(cursor_))
+  {
+  };
 }
 
 }

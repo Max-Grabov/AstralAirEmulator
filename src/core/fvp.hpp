@@ -27,11 +27,12 @@ private:
   std::unique_ptr<Utility::MappedFile> overall_save_file_{nullptr};
   std::unique_ptr<Utility::MappedFile> hcb_file_{nullptr};;
   std::unique_ptr<RenderWindow> rendering_window_{nullptr};
-  std::unique_ptr<Cursor> cursor_{nullptr};
   std::array<Formats::SaveInformation, 999> save_data_array_;
+  std::array<std::unique_ptr<Cursor>, 4> cursors_{};
   std::vector<SyscallEntry> syscall_table_;
   std::vector<std::byte> game_title_;
   std::vector<std::byte> font_name_;
+  Cursor *current_cursor_{nullptr};
   uint32_t hcb_current_file_position_{};
   uint32_t save_preview_width_{};
   uint32_t save_preview_height_{};
