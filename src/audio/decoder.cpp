@@ -46,19 +46,21 @@ std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&input_buffer)
     return std::nullopt;
   }
 
-  if(uint32_t format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 8)}; format != 0x57415645)
+  if(uint32_t format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 8)};
+     format != 0x57415645)
   {
     return std::nullopt;
   }
 
   // fmt sub chunk
-  if(uint32_t fmt_format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 12)}; fmt_format != 0x666d7420)
+  if(uint32_t fmt_format{Utility::Get<uint32_t, std::endian::little>(input_buffer, 12)};
+     fmt_format != 0x666d7420)
   {
     return std::nullopt;
   }
 
-  
-  if(uint32_t fmt_chunk_size{Utility::Get<uint32_t, std::endian::big>(input_buffer, 16)}; fmt_chunk_size != 0x00000010)
+  if(uint32_t fmt_chunk_size{Utility::Get<uint32_t, std::endian::big>(input_buffer, 16)};
+     fmt_chunk_size != 0x00000010)
   {
     return std::nullopt;
   }
@@ -79,19 +81,23 @@ std::optional<AudioStream> DecodeWAV(std::vector<std::byte> &&input_buffer)
   }
 
   // data sub chunk
-  if(uint32_t data_id{Utility::Get<uint32_t, std::endian::little>(input_buffer, 36)}; data_id != 0x4C495354)
+  if(uint32_t data_id{Utility::Get<uint32_t, std::endian::little>(input_buffer, 36)};
+     data_id != 0x4C495354)
   {
     return std::nullopt;
   }
 
-  if(uint32_t pad_string{Utility::Get<uint32_t, std::endian::little>(input_buffer, 110)}; pad_string != 0x50414420)
+  if(uint32_t pad_string{Utility::Get<uint32_t, std::endian::little>(input_buffer, 110)};
+     pad_string != 0x50414420)
   {
     return std::nullopt;
   }
 
   uint32_t pad_value{Utility::Get<uint32_t, std::endian::big>(input_buffer, 114)};
-  
-  if(uint32_t data_string{Utility::Get<uint32_t, std::endian::little>(input_buffer, 118 + pad_value)}; data_string != 0x64617461)
+
+  if(uint32_t data_string{
+         Utility::Get<uint32_t, std::endian::little>(input_buffer, 118 + pad_value)};
+     data_string != 0x64617461)
   {
     return std::nullopt;
   }

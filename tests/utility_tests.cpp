@@ -47,4 +47,3 @@ TEST(UtilTest, TestConvertEndian)
   test_value = Get<uint32_t, std::endian::little>(t, 0);
   EXPECT_EQ(test_value, 0x00000003);
 }
-

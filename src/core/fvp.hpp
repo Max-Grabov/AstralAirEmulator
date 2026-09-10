@@ -1,11 +1,11 @@
 #pragma once
 
-#include "formats/save_information.hpp"
-#include "engine/syscall_entry.hpp"
-#include "engine/screen_mode.hpp"
-#include "util/file/mapped_file.hpp"
-#include "render_window.hpp"
 #include "cursor.hpp"
+#include "engine/screen_mode.hpp"
+#include "engine/syscall_entry.hpp"
+#include "formats/save_information.hpp"
+#include "render_window.hpp"
+#include "util/file/mapped_file.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -24,9 +24,10 @@ public:
 
 private:
   std::string_view save_file_directory_;
-  std::string_view data_directory_; 
+  std::string_view data_directory_;
   std::unique_ptr<Utility::MappedFile> overall_save_file_{nullptr};
-  std::unique_ptr<Utility::MappedFile> hcb_file_{nullptr};;
+  std::unique_ptr<Utility::MappedFile> hcb_file_{nullptr};
+  ;
   std::unique_ptr<RenderWindow> rendering_window_{nullptr};
   std::array<Formats::SaveInformation, 999> save_data_array_;
   std::array<std::unique_ptr<Cursor>, 4> cursors_{};
@@ -52,7 +53,7 @@ private:
   void OpenOverallSave();
   void OpenHCBFile();
   void GetSaveInformation(uint32_t save_number);
-  void InitializeData(); 
+  void InitializeData();
   void OpenWindowAndCursor();
 
 public:

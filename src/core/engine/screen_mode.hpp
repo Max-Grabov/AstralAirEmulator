@@ -13,4 +13,4 @@ enum class ScreenMode
   UNKNOWN = 2
 };
 }
-}
+} // namespace fvp
