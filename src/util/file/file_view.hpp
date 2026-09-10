@@ -61,17 +61,10 @@ public:
                                std::to_string(offset + sizeof(T)));
     }
 
-    std::vector<std::byte> buffer(sizeof(T));
-
     file_data_.seekg(offset, std::ios::beg);
 
-    // This must be char *, uint8_t is not guarranteed to play nice (e.g. in testing all reads were
-    // returning 0)
-    file_data_.read(reinterpret_cast<char *>(buffer.data()), sizeof(T));
-    file_data_.seekg(0, std::ios::beg);
-
     T data{};
-    std::memcpy(&data, buffer.data(), sizeof(T));
+    file_data_.read(reinterpret_cast<char *>(&data), sizeof(T));
     
     if constexpr(std::endian::native == E)
     {
@@ -106,7 +99,6 @@ public:
     std::vector<std::byte> buffer(size);
     file_data_.seekg(offset, std::ios::beg);
     file_data_.read(reinterpret_cast<char *>(buffer.data()), size);
-    file_data_.seekg(0, std::ios::beg);
 
     return buffer;
   }

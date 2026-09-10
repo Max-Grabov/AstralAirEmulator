@@ -71,8 +71,6 @@ template <Gettable T, std::endian E> [[nodiscard]] T Get(const std::span<const s
   return std::span<const std::byte>(stream.data() + offset, size);
 }
 
-// Returns a std span at the specified offset and size of the data (e.g. good for strings)
-
 template <Gettable T> void Write(std::span<std::byte> stream, size_t offset, const T &value)
 {
   if(!stream.data())
