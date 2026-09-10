@@ -17,6 +17,7 @@ private:
   
 public:
   Cursor(const std::span<const std::byte> ani_data, int click_x = 0, int click_y = 0);
+  Cursor(SDL_Cursor *);
   ~Cursor();
   void SetCursor() const;
 };

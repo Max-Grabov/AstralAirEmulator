@@ -19,7 +19,7 @@ private:
   SDL_Renderer *renderer_{nullptr};
   
 public:
-  RenderWindow(std::string_view window_name, int width_resolution, int height_resolution /* TODO Window Options */);
+  RenderWindow(std::string_view window_name, int width_resolution, int height_resolution, int window_options = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   ~RenderWindow(); 
   RenderWindow(const RenderWindow &) = delete;
   RenderWindow(RenderWindow &&) noexcept;

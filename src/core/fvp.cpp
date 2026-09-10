@@ -1,10 +1,12 @@
 #include "fvp.hpp"
 
 #include "SDL3/SDL_mouse.h"
+#include "SDL3/SDL_video.h"
 #include "render_window.hpp"
 #include "audio_playback.hpp"
 #include "engine/syscall_entry.hpp"
 #include "engine/resolution_table.hpp" 
+#include "screen_mode.hpp"
 #include "util/encoding/encoding.hpp"
 #include "util/file/mapped_file.hpp"
 #include "formats/bin.hpp"
@@ -105,23 +107,6 @@ void FVP::InitializeData()
     throw std::runtime_error(SDL_GetError());
   }
 
-  // TODO move this into probably the same area as other asset setup
-  for(size_t cursor_num{1}; cursor_num < cursors_.size(); ++cursor_num)
-  {
-    try
-    {
-      Utility::MappedFile cursor(std::vformat("{}/cursor{}.ani", std::make_format_args(data_directory_, cursor_num)), 
-                                 Utility::MappedFile::Permissions::READ, 
-                                 Utility::MappedFile::CreateFile::NO_CREATE_FILE);
-      auto cursor_data = cursor.Get(0, cursor.Data().size());
-      cursors_[cursor_num] = std::make_unique<Cursor>(cursor_data);
-    }
-    catch(Utility::MappedFile::create_file_exception &e)
-    {
-      cursors_[cursor_num] = nullptr;
-    }
-  }
-   
   OpenHCBFile();
   OpenOverallSave();
   OpenWindowAndCursor(); 
@@ -143,8 +128,16 @@ void FVP::OpenOverallSave()
     //ptr += opcodes_processed_ * sizeof(Opcode);
 
     ptr += opcodes_processed_ * 8;
-    uint8_t graphic_mode_maybe{overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr)};
-    bool visible{static_cast<bool>(overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr))};
+    uint8_t screen_mode_byte{overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr)};
+
+    // sets this mode based off if the mode is not 0 (windowed), so we have the mapping
+    // windowed -> windowed
+    // fullscreen -> fullscreen
+    // IDK -> fullscreen
+    screen_mode_ = static_cast<ScreenMode>((static_cast<ScreenMode>(screen_mode_byte) != ScreenMode::WINDOWED));
+
+    // Similar to above, sets the boolean if not equal to 0. Since we only have to options I just read directly.
+    visible_ = static_cast<bool>(overall_save_file_->GetAndIncrement<std::endian::big, uint8_t>(ptr));
 
     uint32_t left_position{overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr)};
     uint32_t top_position{overall_save_file_->GetAndIncrement<std::endian::big, uint32_t>(ptr)};
@@ -164,7 +157,7 @@ void FVP::OpenOverallSave()
         // then if another field is not false, set the cursor TODO
         if(!false)
         { 
-          current_cursor_ = cursors_[cursor_choice].get();
+          current_cursor_ = &cursors_[cursor_choice];
         }
       }   
 
@@ -213,7 +206,8 @@ void FVP::OpenOverallSave()
 
   catch(Utility::MappedFile::create_file_exception &e)
   {
-    // NEW FILE CASE
+    screen_mode_ = ScreenMode::WINDOWED;  
+    visible_ = true;
   }
 
   // TODO Windows to SDL config shit for window showing, cursor placement, window size etc.
@@ -283,11 +277,30 @@ void FVP::OpenHCBFile()
 
 void FVP::OpenWindowAndCursor()
 {
-  rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), window_width_, window_height_);
+  // Default system cursor is option 0
+  cursors_[0] = std::make_unique<Cursor>(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER));
+
+  for(size_t cursor_num{1}; cursor_num < cursors_.size(); ++cursor_num)
+  {
+    try
+    {
+      Utility::MappedFile cursor(std::vformat("{}/cursor{}.ani", std::make_format_args(data_directory_, cursor_num)), 
+                                 Utility::MappedFile::Permissions::READ, 
+                                 Utility::MappedFile::CreateFile::NO_CREATE_FILE);
+      auto cursor_data = cursor.Get(0, cursor.Data().size());
+      cursors_[cursor_num] = std::make_unique<Cursor>(cursor_data);
+    }
+    catch(Utility::MappedFile::create_file_exception &e)
+    {
+      cursors_[cursor_num] = nullptr;
+    }
+  }
+
+  rendering_window_ = std::make_unique<RenderWindow>(std::string_view(reinterpret_cast<const char*>(game_title_.data()), game_title_.size()), window_width_, window_height_, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | (visible_ ? 0 : SDL_WINDOW_HIDDEN));
 
   if(current_cursor_ != nullptr)
   {
-    current_cursor_->SetCursor();
+    current_cursor_->get()->SetCursor();
   }
 }
 

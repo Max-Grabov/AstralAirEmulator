@@ -13,9 +13,9 @@ namespace fvp
 namespace Core
 {
 
-RenderWindow::RenderWindow(std::string_view window_name, int width_resolution, int height_resolution)
+RenderWindow::RenderWindow(std::string_view window_name, int width_resolution, int height_resolution, int window_options)
 {
-  window_ = SDL_CreateWindow(window_name.data(), width_resolution, height_resolution, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+  window_ = SDL_CreateWindow(window_name.data(), width_resolution, height_resolution, window_options);
   
   if(!window_)
   {

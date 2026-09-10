@@ -2,6 +2,7 @@
 
 #include "formats/save_information.hpp"
 #include "engine/syscall_entry.hpp"
+#include "engine/screen_mode.hpp"
 #include "util/file/mapped_file.hpp"
 #include "render_window.hpp"
 #include "cursor.hpp"
@@ -32,7 +33,7 @@ private:
   std::vector<SyscallEntry> syscall_table_;
   std::vector<std::byte> game_title_;
   std::vector<std::byte> font_name_;
-  Cursor *current_cursor_{nullptr};
+  std::unique_ptr<Cursor> *current_cursor_{nullptr};
   uint32_t hcb_current_file_position_{};
   uint32_t save_preview_width_{};
   uint32_t save_preview_height_{};
@@ -44,6 +45,9 @@ private:
   uint16_t opcode_count_{};
   uint16_t opcodes_processed_{};
   uint8_t cursor_choice_{};
+  bool visible_{};
+  ScreenMode screen_mode_{};
+  ScreenMode screen_mode_to_change_to{};
 
   void OpenOverallSave();
   void OpenHCBFile();

@@ -38,6 +38,14 @@ Cursor::Cursor(const std::span<const std::byte> ani_data, int click_x, int click
   IMG_FreeAnimation(animation);
 }
 
+Cursor::Cursor(SDL_Cursor * cursor) : cursor_(cursor)
+{
+  if(!cursor_)
+  {
+    throw std::runtime_error("Attempting to set an Cursor from null SDL Cursor");
+  }
+} 
+
 Cursor::~Cursor()
 {
   SDL_DestroyCursor(cursor_);
